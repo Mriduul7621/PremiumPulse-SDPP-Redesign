@@ -141,3 +141,23 @@
   .sdpp-app :is(.tracking-widest,.tracking-wider) { letter-spacing:.045em; }
 }
 @media print { .sdpp-app :is(.shadow-2xl,.shadow-xl) { box-shadow:none!important; } }
+
+/* Opening screen only: subtle watermark, with separate desktop/mobile artwork. */
+.premium-home-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("https://raw.githubusercontent.com/mriduultnd/PremiumPulse-SDPP-Redesign/main/Premium%20Pulse%20Laptop%20BG.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.17;
+}
+@media (max-width: 639px) {
+  .premium-home-bg::before {
+    background-image: url("/Premium%20pulse%20Mobile%20app%20BG.jpg");
+    background-position: center top;
+    opacity: 0.19;
+  }
+}
