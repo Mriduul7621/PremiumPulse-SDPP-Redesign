@@ -156,7 +156,7 @@
 }
 @media (max-width: 639px) {
   .premium-home-bg::before {
-    background-image: url("/Premium%20pulse%20Mobile%20app%20BG.jpg");
+    background-image: url("https://raw.githubusercontent.com/mriduultnd/PremiumPulse-SDPP-Redesign/main/Premium%20Pulse%20Mobile%20App%20BG.jpg");
     background-position: center top;
     background-size: 100% auto;
     opacity: 0.19;
