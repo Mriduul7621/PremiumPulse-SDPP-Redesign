@@ -14,6 +14,7 @@ interface PlanQuotationModalProps {
   isOpen: boolean;
   onClose: () => void;
   embedded?: boolean;
+  showProjection?: boolean;
   input: CalculationInput;
   selectedProduct?: CalculationResult;
   sdppData?: SDPPResult;
@@ -29,6 +30,7 @@ export default function PlanQuotationModal({
   isOpen,
   onClose,
   embedded = false,
+  showProjection = true,
   input,
   selectedProduct,
   sdppData,
@@ -1363,7 +1365,7 @@ export default function PlanQuotationModal({
               </div>
 
               {/* Projection Schedule Table - Matching Liquidity View Columns & Data */}
-              {projectionData && projectionData.length > 0 && (
+              {showProjection && projectionData && projectionData.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2">
                     <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
