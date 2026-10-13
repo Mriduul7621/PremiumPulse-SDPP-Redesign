@@ -13,6 +13,7 @@ import { sanitizeClonedDocForPdf } from '../lib/pdfColorSanitizer';
 interface PlanQuotationModalProps {
   isOpen: boolean;
   onClose: () => void;
+  embedded?: boolean;
   input: CalculationInput;
   selectedProduct?: CalculationResult;
   sdppData?: SDPPResult;
@@ -27,6 +28,7 @@ interface PlanQuotationModalProps {
 export default function PlanQuotationModal({
   isOpen,
   onClose,
+  embedded = false,
   input,
   selectedProduct,
   sdppData,
@@ -271,8 +273,8 @@ export default function PlanQuotationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 print:p-0 print:bg-white print:fixed print:inset-0">
-      <div className="bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 print:max-h-none print:shadow-none print:border-none print:rounded-none print:w-full">
+    <div className={embedded ? "w-full flex justify-center print:block" : "fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 print:p-0 print:bg-white print:fixed print:inset-0"}>
+      <div className={embedded ? "w-full min-w-0 flex flex-col bg-slate-100 print:bg-white" : "bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 print:max-h-none print:shadow-none print:border-none print:rounded-none print:w-full"}>
         
         {/* Modal Action Header (Hidden when printing) */}
         <div className="bg-slate-900 text-white p-4 md:px-8 flex items-center justify-between border-b border-slate-800 print:hidden flex-shrink-0">
@@ -319,7 +321,7 @@ export default function PlanQuotationModal({
 
             <button
               onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer ml-2"
+              className={cn("w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer ml-2", embedded && "hidden")}
             >
               <X className="w-5 h-5" />
             </button>
@@ -327,7 +329,7 @@ export default function PlanQuotationModal({
         </div>
 
         {/* Document Scroll Area */}
-        <div className="overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans" id="quotation-document">
+        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"}>
           
           {/* Printable Official Document - PAGE 1 */}
           <div 
