@@ -181,94 +181,76 @@ export default function PlanQuotationModal({
         await (document as any).fonts.ready;
       }
 
+      // Capture the same 800px-wide illustration shown in preview. The preview's
+      // pinch-zoom/scroll wrapper must never affect the exported document.
       const capturePage = async (element: HTMLElement, pageNum: string) => {
-        return await html2canvas(element, {
-          scale: 2.5,
+        const pageHeight = Math.max(1131, element.scrollHeight);
+        return html2canvas(element, {
+          scale: 2,
           useCORS: true,
           logging: false,
           backgroundColor: '#ffffff',
           width: 800,
-          height: 1131,
-          windowWidth: 800,
-          windowHeight: 1131,
+          height: pageHeight,
+          windowWidth: 1100,
+          windowHeight: Math.max(1200, pageHeight),
+          scrollX: 0,
+          scrollY: 0,
           onclone: (clonedDoc) => {
-            // Thoroughly sanitize all modern CSS colors (oklab, oklch, color-mix) in cloned document
             sanitizeClonedDocForPdf(clonedDoc);
-
-            // Format cloned target page container to fit A4 page proportion perfectly
-            const targetEl = clonedDoc.querySelector(`[data-page="${pageNum}"]`) as HTMLElement;
-            if (targetEl) {
-              targetEl.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-              targetEl.style.fontVariantNumeric = 'tabular-nums';
-              targetEl.style.setProperty('-webkit-font-smoothing', 'antialiased');
-              targetEl.style.width = '800px';
-              targetEl.style.maxWidth = '800px';
-              targetEl.style.minWidth = '800px';
-              targetEl.style.minHeight = '1131px';
-              targetEl.style.boxSizing = 'border-box';
-              targetEl.style.padding = '24px 28px';
-              targetEl.style.margin = '0 auto';
-              targetEl.style.borderRadius = '0px';
-              targetEl.style.border = 'none';
-              targetEl.style.boxShadow = 'none';
-              targetEl.style.backgroundColor = '#ffffff';
+            const targetEl = clonedDoc.querySelector(`[data-page="${pageNum}"]`) as HTMLElement | null;
+            if (!targetEl) return;
+            // Neutralize the zoom applied to the preview wrapper on mobile.
+            let ancestor = targetEl.parentElement;
+            while (ancestor && ancestor !== clonedDoc.body) {
+              ancestor.style.zoom = '1';
+              ancestor.style.transform = 'none';
+              ancestor.style.overflow = 'visible';
+              ancestor.style.maxHeight = 'none';
+              ancestor = ancestor.parentElement;
             }
+            targetEl.style.zoom = '1';
+            targetEl.style.transform = 'none';
+            targetEl.style.width = '800px';
+            targetEl.style.minWidth = '800px';
+            targetEl.style.maxWidth = '800px';
+            targetEl.style.height = 'auto';
+            targetEl.style.minHeight = '1131px';
+            targetEl.style.boxSizing = 'border-box';
+            targetEl.style.margin = '0';
+            targetEl.style.borderRadius = '0';
+            targetEl.style.boxShadow = 'none';
+            targetEl.style.backgroundColor = '#ffffff';
           }
         });
       };
 
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfWidth = 210;
       const pdfHeight = 297;
 
-      // Page 1
-      if (page1Ref.current) {
-        const canvas1 = await capturePage(page1Ref.current, '1');
-        const imgData1 = canvas1.toDataURL('image/png');
-        const imgHeight1 = (canvas1.height * pdfWidth) / canvas1.width;
-
-        if (imgHeight1 <= pdfHeight) {
-          pdf.addImage(imgData1, 'PNG', 0, 0, pdfWidth, imgHeight1, undefined, 'FAST');
-        } else {
-          let heightLeft = imgHeight1;
-          let position = 0;
-          pdf.addImage(imgData1, 'PNG', 0, position, pdfWidth, imgHeight1, undefined, 'FAST');
-          heightLeft -= pdfHeight;
-          while (heightLeft > 0) {
-            position -= pdfHeight;
-            pdf.addPage();
-            pdf.addImage(imgData1, 'PNG', 0, position, pdfWidth, imgHeight1, undefined, 'FAST');
-            heightLeft -= pdfHeight;
-          }
+      // Slice the bitmap rather than repositioning an oversized image across PDF
+      // pages; this prevents shifted, clipped and duplicated illustration content.
+      const appendPage = (canvas: HTMLCanvasElement, first: boolean) => {
+        const sliceHeight = Math.round(canvas.width * pdfHeight / pdfWidth);
+        for (let y = 0; y < canvas.height; y += sliceHeight) {
+          if (!first || y > 0) pdf.addPage();
+          const piece = document.createElement('canvas');
+          piece.width = canvas.width;
+          piece.height = Math.min(sliceHeight, canvas.height - y);
+          const context = piece.getContext('2d');
+          if (!context) throw new Error('PDF canvas context unavailable');
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, piece.width, piece.height);
+          context.drawImage(canvas, 0, y, piece.width, piece.height, 0, 0, piece.width, piece.height);
+          pdf.addImage(piece.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth,
+            piece.height * pdfWidth / piece.width, undefined, 'FAST');
         }
-      }
+      };
 
-      // Page 2 (Only for non-combo / non-SDPP primary policy illustrations)
+      appendPage(await capturePage(page1Ref.current, '1'), true);
       if (!isComboEnabled && !isSDPP && page2Ref.current) {
-        const canvas2 = await capturePage(page2Ref.current, '2');
-        const imgData2 = canvas2.toDataURL('image/png');
-        const imgHeight2 = (canvas2.height * pdfWidth) / canvas2.width;
-
-        pdf.addPage();
-        if (imgHeight2 <= pdfHeight) {
-          pdf.addImage(imgData2, 'PNG', 0, 0, pdfWidth, imgHeight2, undefined, 'FAST');
-        } else {
-          let heightLeft = imgHeight2;
-          let position = 0;
-          pdf.addImage(imgData2, 'PNG', 0, position, pdfWidth, imgHeight2, undefined, 'FAST');
-          heightLeft -= pdfHeight;
-          while (heightLeft > 0) {
-            position -= pdfHeight;
-            pdf.addPage();
-            pdf.addImage(imgData2, 'PNG', 0, position, pdfWidth, imgHeight2, undefined, 'FAST');
-            heightLeft -= pdfHeight;
-          }
-        }
+        appendPage(await capturePage(page2Ref.current, '2'), false);
       }
 
       const now = new Date();
