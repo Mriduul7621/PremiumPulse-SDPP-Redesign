@@ -123,3 +123,21 @@
 .sdpp-app tr { border-bottom:1px solid #e2e8f0; }
 @media(max-width:640px) { .sdpp-topbar-inner { padding:11px 14px; } .sdpp-topbar-inner .sdpp-version { display:none; } .sdpp-app table { font-size:12px; } }
 @media print { .sdpp-topbar { display:none!important; } .sdpp-app { background:#fff!important; } }
+
+/* PremiumPulse refined responsive visual system — based on approved mobile concept. */
+.sdpp-app { color:#36403b; }
+.sdpp-app :is(.rounded-\[2\.5rem\],.rounded-\[3rem\],.rounded-\[2rem\],.rounded-3xl) { border-radius:18px; }
+.sdpp-app :is(.rounded-2xl,.rounded-\[1\.5rem\]) { border-radius:14px; }
+.sdpp-app :is(.shadow-2xl,.shadow-xl) { box-shadow:0 5px 22px rgba(54,64,59,.075); }
+.sdpp-app :is(button,input,select,textarea) { font-family:inherit; }
+.sdpp-app button:not(:disabled) { transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease; }
+.sdpp-app button:not(:disabled):active { transform:scale(.99); }
+.sdpp-app :is(input,select,textarea) { border-radius:10px; }
+.sdpp-app :is(.border-slate-200,.border-brand-primary\/10) { border-color:#e5e8df; }
+@media(max-width:640px) {
+  .sdpp-app :is(.rounded-\[2\.5rem\],.rounded-\[3rem\],.rounded-\[2rem\],.rounded-3xl) { border-radius:16px; }
+  .sdpp-app :is(.rounded-2xl,.rounded-\[1\.5rem\]) { border-radius:12px; }
+  .sdpp-app :is(.shadow-2xl,.shadow-xl) { box-shadow:0 3px 15px rgba(54,64,59,.065); }
+  .sdpp-app :is(.tracking-widest,.tracking-wider) { letter-spacing:.045em; }
+}
+@media print { .sdpp-app :is(.shadow-2xl,.shadow-xl) { box-shadow:none!important; } }
