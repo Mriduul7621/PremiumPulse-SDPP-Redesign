@@ -170,3 +170,14 @@
   .premium-home-title h1 { font-size: clamp(30px, 9vw, 42px); }
   .premium-home-action { top: 74%; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); width: min(280px, calc(100% - 40px)); }
 }
+
+/* Desktop: keep app name immediately above the bottom-right start action. */
+@media (min-width: 640px) {
+  .premium-home-title { top: auto; left: auto; right: 7%; bottom: calc(11% + 78px); width: min(300px, 36vw); text-align: center; }
+  .premium-home-title h1 { font-size: clamp(30px, 3.1vw, 48px); }
+}
+/* Mobile: a compact, bold arrow directly beneath the app name. */
+@media (max-width: 639px) {
+  .premium-home-action { top: calc(10% + 58px); bottom: auto; width: 64px; }
+  .premium-home-action button { width: 64px; height: 56px; padding: 0; border-radius: 16px; }
+}
