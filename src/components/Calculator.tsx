@@ -862,13 +862,13 @@ export default function Calculator() {
                       disabled={!isStep2Complete}
                       onClick={() => handleInputChange('inputMode', 'SumAssured')}
                       className={cn(
-                        "py-2.5 px-3 rounded-full border text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer",
+                        "py-2.5 px-3 rounded-xl border text-[11px] font-bold tracking-wide transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm",
                         input.inputMode === 'SumAssured' 
                           ? "bg-brand-primary text-white border-brand-primary shadow-sm" 
                           : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
                       )}
                     >
-                      <Shield className="w-3.5 h-3.5" /> Fix Base Coverage (SA)
+                      <Shield className="w-3.5 h-3.5" /> <span className="sm:hidden">Sum Assured</span><span className="hidden sm:inline">Fix Base Coverage (SA)</span>
                     </button>
                     <button
                       type="button"
@@ -881,7 +881,7 @@ export default function Calculator() {
                           : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
                       )}
                     >
-                      <DollarSign className="w-3.5 h-3.5" /> Fix Target Premium
+                      <DollarSign className="w-3.5 h-3.5" /> <span className="sm:hidden">Premium</span><span className="hidden sm:inline">Fix Target Premium</span>
                     </button>
                   </div>
                 ) : (
