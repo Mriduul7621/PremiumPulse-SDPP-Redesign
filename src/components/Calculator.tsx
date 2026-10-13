@@ -175,6 +175,8 @@ export default function Calculator() {
     setComboSdppCustomRate('');
   };
   const [isCompareMode, setIsCompareMode] = useState<boolean>(false);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
+  const [previewSection, setPreviewSection] = useState<'quotation' | 'term' | 'policy' | 'liquidity'>('quotation');
   const [showQuotationModal, setShowQuotationModal] = useState<boolean>(false);
   const [showTermComparisonModal, setShowTermComparisonModal] = useState<boolean>(false);
   const [showPlanMenu, setShowPlanMenu] = useState(false);
@@ -629,6 +631,7 @@ export default function Calculator() {
             </div>
           </div>
 
+          <nav aria-label="Configuration steps" className="grid grid-cols-3 gap-2 rounded-xl border border-[#e5e8df] bg-[#f8f9f3] p-2">{(['Personal','Plan','Riders'] as const).map((name,index)=><button key={name} type="button" disabled={index===1&&!isStep1Complete || index===2&&!isStep6Complete} onClick={()=>setWizardStep((index+1) as 1|2|3)} className={cn('rounded-lg py-3 text-xs font-semibold disabled:opacity-40',wizardStep===index+1?'bg-brand-primary text-white shadow-sm':'text-brand-text hover:bg-white')}>{index+1}. {name}</button>)}</nav>
           {/* Grid Layout for Policy Inputs */}
           <div className={cn(
             "grid grid-cols-1 gap-5 lg:gap-8 items-start transition-all duration-500",
@@ -658,6 +661,7 @@ export default function Calculator() {
                 )}
               </div>
 
+              <div className={wizardStep === 1 ? 'space-y-4' : 'hidden'}>
               {/* STEP 1: IDENTITY (Gender, DOB, Age) & Issue Date */}
               <div className={cn(
                 "p-4 rounded-2xl border transition-all duration-300 space-y-3",
@@ -744,6 +748,8 @@ export default function Calculator() {
                 </div>
               </div>
 
+              </div>
+              <div className={wizardStep === 2 ? 'space-y-4' : 'hidden'}>
               {/* STEP 2: PRODUCT SELECTION */}
               <div className={cn(
                 "p-4 rounded-2xl border transition-all duration-300 space-y-3",
@@ -1199,6 +1205,8 @@ export default function Calculator() {
                 })()}
               </div>
 
+              </div>
+              <div className={wizardStep === 3 ? 'space-y-4' : 'hidden'}>
               {/* STEP 7: ADDITIONAL RIDERS (OPTIONAL) */}
               {!isSDPP && !isSinglePremiumProduct && (
                 <div className={cn(
@@ -1325,8 +1333,9 @@ export default function Calculator() {
               )}
             </div>
 
+              </div>
             {/* RIGHT COLUMN: SDPP COMBO SETTINGS */}
-            {isComboEnabled && !isSDPP && (
+            {wizardStep === 3 && isComboEnabled && !isSDPP && (
               <AnimatePresence>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -1596,8 +1605,8 @@ export default function Calculator() {
               </button>
 
               <button 
-                onClick={() => setAppState('results')}
-                disabled={!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0}
+                onClick={() => { if (wizardStep < 3) setWizardStep((wizardStep+1) as 1|2|3); else { setPreviewSection('quotation'); setAppState('results'); } }}
+                disabled={(wizardStep === 1 && !isStep1Complete) || (wizardStep === 2 && !isStep6Complete) || (wizardStep === 3 && (!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0))}
                 className={cn(
                   "rounded-full px-7 py-3 font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-lg",
                   (!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0)
@@ -1605,7 +1614,7 @@ export default function Calculator() {
                     : "bg-brand-primary text-white hover:bg-brand-primary/90 shadow-brand-primary/25 active:scale-95"
                 )}
               >
-                View Valuation Result
+                {wizardStep < 3 ? 'Next' : 'View Calculation Result'}
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
