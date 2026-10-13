@@ -309,29 +309,43 @@ export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
     return Math.max(0, accountValue - (accountValue * chargePercent) - processingFee);
   };
 
-  const maturity7Val = calculateAV(0.07, pTerm * 12);
-  const maturity9Val = calculateAV(0.09, pTerm * 12);
+  const maturity7Val = calculateAV(0.065, pTerm * 12);
+  const maturity9Val = calculateAV(0.085, pTerm * 12);
 
   const customRate = Number(inputs.customInterestRate);
   const customMaturity = (customRate && customRate > 0) ? calculateAV(customRate / 100, pTerm * 12) : undefined;
   const totalModePremium = inputPremium + ciModePremium + hiModePremium;
 
-  // 5. Projection Table (using 7% average)
-  const projection: any[] = [];
-  let cumulativePaid = 0;
+  // Source SDPP projection: announced rate defaults to 8%, monthly balance and
+  // daily-compounded allocated premium are calculated separately.
+  const announcedRate = 8;
+  const qMonthlyRate = Math.pow(1 + announcedRate / 100, 1 / 12) - 1;
+  const qDailyRateBase = Math.pow(1 + announcedRate / 100, 1 / 365);
+  const modeMonths = premiumMode === 'Monthly' ? 1 : premiumMode === 'Quarterly' ? 3 : premiumMode === 'Half-yearly' ? 6 : 12;
+  const fullYearDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const projection: SDPPResult['projection'] = [];
+  let projAV = 0;
   for (let year = 1; year <= pTerm; year++) {
-    const avAtYear7 = calculateAV(0.07, year * 12);
-    
-    const yearsPaidRider = Math.min(year, 15);
-    cumulativePaid = (annualPremium * year) + ((ciMonthly + hiMonthly) * 12 * yearsPaidRider);
-
-    projection.push({
-      year,
-      premiumPaid: Math.round(cumulativePaid),
-      accountValue: avAtYear7,
-      charges: 0,
-      interest: 0
-    });
+    let yearCharges = 0;
+    let yearInterest = 0;
+    for (let monthInYear = 1; monthInYear <= 12; monthInYear++) {
+      const m = (year - 1) * 12 + monthInYear;
+      const openingAV = projAV;
+      const premiumDeposit = (m - 1) % modeMonths === 0 ? mBasicPremium * modeMonths : 0;
+      const premiumFee = premiumDeposit * getPremiumChargeRate(year, pTerm);
+      const allocatedPremium = premiumDeposit - premiumFee;
+      const adminFee = getAdminCharge(annualPremium);
+      const mortalityRate = getMortalityRate(age + year - 1) / 12;
+      const currentSA = isPrime ? Math.max(allocatedPremium, openingAV) : annualPremium * pTerm;
+      const NAR = Math.max(0, currentSA - (openingAV - adminFee));
+      const totalCharges = adminFee + NAR * mortalityRate;
+      const netBase = openingAV - totalCharges;
+      const interestEarned = netBase * qMonthlyRate + allocatedPremium * (Math.pow(qDailyRateBase, fullYearDays[monthInYear - 1]) - 1);
+      projAV = Math.max(0, netBase + allocatedPremium + interestEarned);
+      yearCharges += totalCharges;
+      yearInterest += interestEarned;
+    }
+    projection.push({ year, premiumPaid: Math.round(annualPremium * year), charges: Math.round(yearCharges), interest: Math.round(yearInterest), accountValue: Math.round(projAV) });
   }
 
   const calculateTotalPaidAtMonth = (month: number) => {
