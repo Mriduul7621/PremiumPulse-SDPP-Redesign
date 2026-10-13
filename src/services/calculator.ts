@@ -362,7 +362,7 @@ export function calculateSDPPResult(input: CalculationInput) {
     const res = runSDPPCalculations({
       ...input,
       sdppPlan: p.plan as any,
-      targetPremium: input.targetPremium || 5000
+      targetPremium: input.targetPremium ?? 0
     });
 
     // Calculate rider total for modes
