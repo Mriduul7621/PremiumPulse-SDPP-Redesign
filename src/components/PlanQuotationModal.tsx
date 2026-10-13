@@ -343,15 +343,8 @@ export default function PlanQuotationModal({
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-brand-primary/20 pb-6">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <img src="/shanta-life-logo.png" alt="Shanta Life" className="w-24 h-auto object-contain flex-shrink-0" />
-                  <div>
-                    <h1 className="text-xl sm:text-2xl font-black text-brand-primary tracking-tight uppercase">
-                      SHANTA LIFE INSURANCE
-                    </h1>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                      Financial Security & Wealth Assurance
-                    </p>
-                  </div>
+                  <img src="/shanta-life-logo.png" alt="Shanta Life" className="w-36 h-auto object-contain flex-shrink-0" />
+                  
                 </div>
               </div>
 
@@ -1333,10 +1326,8 @@ export default function PlanQuotationModal({
               {/* Page 2 Header Banner */}
               <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <img src="/shanta-life-logo.png" alt="Shanta Life" className="w-16 h-auto object-contain flex-shrink-0" />
-                  <span className="text-xs font-black text-brand-primary uppercase tracking-tight">
-                    SHANTA LIFE INSURANCE
-                  </span>
+                  <img src="/shanta-life-logo.png" alt="Shanta Life" className="w-28 h-auto object-contain flex-shrink-0" />
+                  
                 </div>
                 <span className="text-[10px] text-slate-500 font-medium">
                   Date: {issueDateStr} • Page 2 of 2
