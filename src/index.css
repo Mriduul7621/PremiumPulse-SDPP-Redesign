@@ -98,17 +98,17 @@
 
 /* SDPP-inspired shared visual language. Presentation only; calculation modules untouched. */
 :root { color-scheme: light; }
-.sdpp-app { background: #f8fafc; min-height: 100vh; }
-.sdpp-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 12px #0f172a08; }
+.sdpp-app { background: linear-gradient(145deg,#fff9f4 0%,#fff 48%,#f2f7ff 100%); min-height: 100vh; }
+.sdpp-topbar { background: #fff; border-bottom: 2px solid #f3702b; box-shadow: 0 2px 12px #7f2d230b; }
 .sdpp-topbar-inner { max-width: 1280px; margin: auto; padding: 13px 22px; display: flex; align-items: center; gap: 12px; color: #1e293b; }
 .sdpp-topbar-inner strong { display:block; font-size: 17px; line-height: 1.25; letter-spacing: -.03em; }
 .sdpp-topbar-inner span { display:block; font-size: 11px; color: #64748b; }
 .sdpp-logo { width: 38px; height:38px; display:grid; place-items:center; border-radius:10px; background:#f3702b; color:white; }
 .sdpp-topbar-inner .sdpp-version { margin-left:auto; border-radius:7px; background:#fff1e6; color:#a94514; padding:7px 10px; font-weight:700; }
 .sdpp-app :is(input,select,textarea) { background-color:#fff; color:#334155; border-color:#cbd5e1; border-radius:9px; }
-.sdpp-app :is(input,select,textarea):focus { outline:2px solid #93c5fd; outline-offset:1px; }
+.sdpp-app :is(input,select,textarea):focus { outline:2px solid #f9b48d; outline-offset:1px; }
 .sdpp-app button { transition: background-color .18s, box-shadow .18s, transform .18s; }
-.sdpp-app button:focus-visible { outline:3px solid #93c5fd; outline-offset:3px; }
+.sdpp-app button:focus-visible { outline:3px solid #f9b48d; outline-offset:3px; }
 .sdpp-app :is(.rounded-\[2\.5rem\],.rounded-3xl) { border-radius:18px; }
 .sdpp-app .shadow-2xl { box-shadow:0 8px 30px #0f172a12; }
 .sdpp-app .shadow-xl { box-shadow:0 5px 20px #0f172a0e; }
