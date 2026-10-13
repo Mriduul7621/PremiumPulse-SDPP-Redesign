@@ -3061,7 +3061,7 @@ export default function Calculator() {
   return (
     <div className="sdpp-app min-h-screen bg-brand-dark text-brand-text font-sans relative">
       <header className="sdpp-topbar relative z-30 print:hidden">
-        <div className="sdpp-topbar-inner"><div className="sdpp-logo"><Shield className="w-5 h-5" /></div><div><strong>Premium Pulse</strong><span>Policy & premium valuation dashboard</span></div><span className="sdpp-version">SDPP-inspired interface</span></div>
+        <div className="sdpp-topbar-inner"><img src="/shanta-life-logo.png" alt="Shanta Life" className="h-10 w-auto max-w-28 object-contain flex-shrink-0" /><div><strong>Premium Pulse</strong><span>Policy & premium valuation dashboard</span></div><span className="sdpp-version">SDPP-inspired interface</span></div>
       </header>
 
       <AnimatePresence mode="wait">

@@ -343,9 +343,7 @@ export default function PlanQuotationModal({
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-brand-primary/20 pb-6">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-brand-primary text-white flex items-center justify-center font-black text-lg">
-                    S
-                  </div>
+                  <img src="/shanta-life-logo.png" alt="Shanta Life" className="w-24 h-auto object-contain flex-shrink-0" />
                   <div>
                     <h1 className="text-xl sm:text-2xl font-black text-brand-primary tracking-tight uppercase">
                       SHANTA LIFE INSURANCE
@@ -1335,9 +1333,7 @@ export default function PlanQuotationModal({
               {/* Page 2 Header Banner */}
               <div className="flex justify-between items-center border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded bg-brand-primary text-white flex items-center justify-center font-black text-xs">
-                    S
-                  </div>
+                  <img src="/shanta-life-logo.png" alt="Shanta Life" className="w-16 h-auto object-contain flex-shrink-0" />
                   <span className="text-xs font-black text-brand-primary uppercase tracking-tight">
                     SHANTA LIFE INSURANCE
                   </span>
