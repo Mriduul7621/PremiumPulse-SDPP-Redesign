@@ -3,12 +3,12 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: "#F3702B",
+          primary: "#978C21",
           gold: "#978C21",
           blue: "#0359B3",
-          darkText: "#3C3C3C",
+          darkText: "#36403B",
           light: "#FFFFFF",
-          softBg: "#FCF4EB",
+          softBg: "#F9FAF3",
           accentBlue: "#026A8B",
           deepRed: "#7F2D23",
           green: "#254525",
