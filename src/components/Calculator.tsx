@@ -7,7 +7,7 @@ import {
   ChevronDown, Check, X, Info, Phone, Mail, DollarSign, 
   Settings2, ArrowLeftRight, Eye, ListFilter, AlertCircle, Smartphone, UserCircle, Briefcase, CheckCircle2, ShieldAlert,
   ArrowLeft, ArrowRight, ExternalLink, Zap, Home, Sparkles, ChevronRight, CircleUser, Target, PlusCircle, Plus, GraduationCap,
-  FileText, Printer, Download, BarChart3, Scale
+  FileText, Printer, Download, BarChart3, Scale, Menu
 } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import { calculatePremiums, calculateSDPPResult, calculateProjection, calculateSAFromPremium } from '../services/calculator';
@@ -138,6 +138,8 @@ export default function Calculator() {
   const [input, setInput] = useState<CalculationInput>(INITIAL_INPUT);
 
   const [appState, setAppState] = useState<'home' | 'inputs' | 'results'>('home');
+  const [activeCalculator, setActiveCalculator] = useState<'premium' | 'official' | 'income' | 'tax'>('premium');
+  const [calculatorMenuOpen, setCalculatorMenuOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -3063,10 +3065,31 @@ export default function Calculator() {
   return (
     <div className="sdpp-app min-h-screen bg-brand-dark text-brand-text font-sans relative">
       <header className="sdpp-topbar relative z-30 print:hidden">
-        <div className="sdpp-topbar-inner"><img src="/shanta-life-logo.png" alt="Shanta Life" className="h-10 w-auto max-w-28 object-contain flex-shrink-0" /><div><strong>Premium Pulse</strong><span>Policy & premium valuation dashboard</span></div></div>
+        <div className="sdpp-topbar-inner relative">
+          <img src="/shanta-life-logo.png" alt="Shanta Life" className="h-10 w-auto max-w-28 object-contain flex-shrink-0" />
+          <div className="min-w-0 flex-1"><strong>Premium Pulse</strong><span>Policy & premium valuation dashboard</span></div>
+          <button type="button" aria-label="Open calculator menu" aria-expanded={calculatorMenuOpen} onClick={() => setCalculatorMenuOpen(v => !v)} className="ml-auto flex-shrink-0 rounded-lg border border-[#d9dece] bg-white/80 p-2 text-brand-text hover:bg-[#f2f3e9]"><Menu className="h-6 w-6" /></button>
+          {calculatorMenuOpen && <div className="absolute right-0 top-full mt-2 w-60 overflow-hidden rounded-xl border border-[#dfe3d5] bg-white p-1.5 shadow-xl z-50" role="menu">
+            {([
+              ['premium', 'Premium Calculator'],
+              ['official', 'Official Calculator'],
+              ['income', 'Income Calculator'],
+              ['tax', 'Tax Calculator']
+            ] as const).map(([key, label]) => <button key={key} type="button" role="menuitem" onClick={() => { setActiveCalculator(key); setCalculatorMenuOpen(false); }} className={cn('flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm font-semibold transition-colors', activeCalculator === key ? 'bg-[#f3f1df] text-[#776d17]' : 'text-brand-text hover:bg-[#f5f6ef]')}>{label}{activeCalculator === key && <Check className="h-4 w-4" />}</button>)}
+          </div>}
+        </div>
       </header>
 
-      <AnimatePresence mode="wait">
+      {activeCalculator !== 'premium' ? (
+        <section className="relative z-10 w-full bg-white" aria-label="Embedded calculator">
+          <div className="flex items-center justify-between gap-3 border-b border-[#e5e8df] px-4 py-2">
+            <span className="text-sm font-semibold">{activeCalculator === 'official' ? 'Official Calculator' : activeCalculator === 'income' ? 'Income Calculator' : 'Tax Calculator'}</span>
+            <a href={activeCalculator === 'official' ? 'https://shantalife.com/premium-calculator' : activeCalculator === 'income' ? 'https://incomecalculator-delta.vercel.app/' : 'https://shantalife.com/tax-calculator#tax-calculator'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-semibold text-[#81771c]">Open original <ExternalLink className="h-3.5 w-3.5" /></a>
+          </div>
+          <iframe key={activeCalculator} title={activeCalculator + ' calculator'} src={activeCalculator === 'official' ? 'https://shantalife.com/premium-calculator' : activeCalculator === 'income' ? 'https://incomecalculator-delta.vercel.app/' : 'https://shantalife.com/tax-calculator#tax-calculator'} className="block w-full border-0 bg-white" style={{ height: 'calc(100dvh - 126px)', minHeight: 600 }} />
+          <p className="px-4 py-2 text-xs text-slate-500">If this website restricts in-app viewing, use Open original above.</p>
+        </section>
+      ) : <AnimatePresence mode="wait">
         {appState === 'home' ? (
           <motion.div key="home" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative z-10">
             {renderHome()}
