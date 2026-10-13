@@ -44,6 +44,22 @@ export default function PlanQuotationModal({
   projectionData = []
 }: PlanQuotationModalProps) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [documentZoom, setDocumentZoom] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640 ? Math.max(0.32, (window.innerWidth - 28) / 800) : 1);
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
+  const pinchDistance = (touches: React.TouchList) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length === 2) pinchRef.current = { distance: pinchDistance(event.touches), zoom: documentZoom };
+  };
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length !== 2) return;
+    event.preventDefault();
+    if (!pinchRef.current) pinchRef.current = { distance: pinchDistance(event.touches), zoom: documentZoom };
+    setDocumentZoom(Math.max(0.3, Math.min(2.5, pinchRef.current.zoom * pinchDistance(event.touches) / Math.max(1, pinchRef.current.distance))));
+  };
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.touches.length < 2) pinchRef.current = null;
+  };
+
   
   const page1Ref = useRef<HTMLDivElement>(null);
   const page2Ref = useRef<HTMLDivElement>(null);
@@ -322,7 +338,7 @@ export default function PlanQuotationModal({
         </div>
 
         {/* Document Scroll Area */}
-        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} style={embedded ? { touchAction: "pan-x pan-y pinch-zoom" } : undefined}>
+        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onTouchCancel={handleTouchEnd} style={{ zoom: documentZoom, touchAction: "pan-x pan-y" }}>
           
           {/* Printable Official Document - PAGE 1 */}
           <div 
