@@ -1040,127 +1040,6 @@ export default function PlanQuotationModal({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     
-                    {/* Life Cover & Death Benefit */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
-                        <Shield className="w-4 h-4 text-brand-primary" />
-                        <h4 className="text-xs font-black uppercase text-slate-900">Life Protection & Death Cover</h4>
-                      </div>
-                      <div className="space-y-2.5 text-xs">
-                        <div className="space-y-0.5 pb-1">
-                          <div className="text-[11px] font-semibold text-slate-700">Natural Death Cover (Life Cover)</div>
-                          <div className="text-right text-sm font-black font-mono text-slate-900">
-                            {isSDPP ? (
-                              input.sdppPlan === 'Prime' ? (
-                                'Account Value or Paid Basic Deposit'
-                              ) : (
-                                `${formatCurrency(typeof sdppData?.deathBenefit === 'number' ? sdppData.deathBenefit : (input.targetPremium || 5000) * 12 * input.term)} or Account Value`
-                              )
-                            ) : (
-                              formatCurrency(input.sumAssured)
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Child Education Monthly Stipend & Waiver of Premium */}
-                        {isChildPlan && (
-                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
-                            <div className="text-[10px] font-black uppercase tracking-wider text-amber-800">
-                              Child Education Stipend ({childPercentageStr}% of SA)
-                            </div>
-                            <div className="bg-amber-50/60 p-2.5 rounded-lg border border-amber-200/80 space-y-1">
-                              <div className="flex justify-between items-center">
-                                <div className="text-[11px] font-bold text-amber-950">Monthly Education Stipend</div>
-                                <div className="text-right text-sm font-black font-mono text-amber-800">
-                                  {formatCurrency(childStipend)} / mo
-                                </div>
-                              </div>
-                              <div className="text-[9px] text-amber-900 leading-snug">
-                                Guaranteed monthly stipend paid upon death of the policyholder until maturity. All future premiums are waived in full.
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* SDPP Accidental Coverage or Standard Accidental Rider */}
-                        {isSDPP ? (
-                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
-                            <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
-                              Accidental Coverage
-                            </div>
-                            <div className="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100 space-y-2">
-                              {/* 1. Accidental Death Benefit */}
-                              <div className="border-b border-emerald-200/50 pb-1.5 flex justify-between items-center">
-                                <div>
-                                  <div className="text-[11px] font-semibold text-emerald-900">Accidental Death Benefit</div>
-                                  <div className="text-[9px] text-emerald-700">
-                                    {input.sdppPlan === 'Prime' ? 'Accidental Cover + Natural Death Cover' : 'Double Sum Assured + Main Life Cover'}
-                                  </div>
-                                </div>
-                                <div className="text-right text-sm font-black font-mono text-emerald-700">
-                                  {input.sdppPlan === 'Prime' ? (
-                                    `${formatCurrency(sdppData?.accidentalBenefit || 0)} + Death Benefit`
-                                  ) : (
-                                    formatCurrency((sdppData?.accidentalBenefit || 0) + (typeof sdppData?.deathBenefit === 'number' ? sdppData.deathBenefit : 0))
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* 2. Accidental Permanent Total Disability (APTD) */}
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <div className="text-[11px] font-semibold text-emerald-900">Accidental Permanent Total Disability (APTD)</div>
-                                  <div className="text-[9px] text-emerald-700">
-                                    Double Sum Assured (200% SA)
-                                  </div>
-                                </div>
-                                <div className="text-right text-sm font-black font-mono text-emerald-700">
-                                  {formatCurrency(sdppData?.accidentalBenefit || 0)}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          input.hasAccidentalProtection && (
-                            <div className="pt-2 border-t border-slate-200/80 space-y-2">
-                              <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
-                                Accidental Rider Protection (4 Coverages)
-                              </div>
-                              <div className="space-y-2 bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
-                                <div className="border-b border-emerald-200/50 pb-1.5 space-y-0.5">
-                                  <div className="text-[11px] font-semibold text-emerald-900">1. Accidental Death Benefit (200%)</div>
-                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
-                                    {formatCurrency(input.sumAssured * 2)}
-                                  </div>
-                                </div>
-
-                                <div className="border-b border-emerald-200/50 pb-1.5 space-y-0.5">
-                                  <div className="text-[11px] font-semibold text-emerald-900">2. Accidental Medical Reimbursement (AMR)</div>
-                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
-                                    Up to {formatCurrency(input.sumAssured * 0.15)} <span className="text-[10px] font-bold text-emerald-800">(15%)</span>
-                                  </div>
-                                </div>
-
-                                <div className="border-b border-emerald-200/50 pb-1.5 space-y-0.5">
-                                  <div className="text-[11px] font-semibold text-emerald-900">3. Accidental Permanent Total Disability (APTD)</div>
-                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
-                                    {formatCurrency(input.sumAssured)} <span className="text-[10px] font-bold text-emerald-800">(100%)</span>
-                                  </div>
-                                </div>
-
-                                <div className="space-y-0.5">
-                                  <div className="text-[11px] font-semibold text-emerald-900">4. Accidental Permanent Partial Disability (APPD)</div>
-                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
-                                    Up to {formatCurrency(input.sumAssured)} <span className="text-[10px] font-bold text-emerald-800">(100%)</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-
                     {/* Maturity & Living Benefits */}
                     <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
                       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
@@ -1315,6 +1194,127 @@ export default function PlanQuotationModal({
                       </div>
                     </div>
 
+
+                    {/* Life Cover & Death Benefit */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+                        <Shield className="w-4 h-4 text-brand-primary" />
+                        <h4 className="text-xs font-black uppercase text-slate-900">Life Protection & Death Cover</h4>
+                      </div>
+                      <div className="space-y-2.5 text-xs">
+                        <div className="space-y-0.5 pb-1">
+                          <div className="text-[11px] font-semibold text-slate-700">Natural Death Cover (Life Cover)</div>
+                          <div className="text-right text-sm font-black font-mono text-slate-900">
+                            {isSDPP ? (
+                              input.sdppPlan === 'Prime' ? (
+                                'Account Value or Paid Basic Deposit'
+                              ) : (
+                                `${formatCurrency(typeof sdppData?.deathBenefit === 'number' ? sdppData.deathBenefit : (input.targetPremium || 5000) * 12 * input.term)} or Account Value`
+                              )
+                            ) : (
+                              formatCurrency(input.sumAssured)
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Child Education Monthly Stipend & Waiver of Premium */}
+                        {isChildPlan && (
+                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                            <div className="text-[10px] font-black uppercase tracking-wider text-amber-800">
+                              Child Education Stipend ({childPercentageStr}% of SA)
+                            </div>
+                            <div className="bg-amber-50/60 p-2.5 rounded-lg border border-amber-200/80 space-y-1">
+                              <div className="flex justify-between items-center">
+                                <div className="text-[11px] font-bold text-amber-950">Monthly Education Stipend</div>
+                                <div className="text-right text-sm font-black font-mono text-amber-800">
+                                  {formatCurrency(childStipend)} / mo
+                                </div>
+                              </div>
+                              <div className="text-[9px] text-amber-900 leading-snug">
+                                Guaranteed monthly stipend paid upon death of the policyholder until maturity. All future premiums are waived in full.
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* SDPP Accidental Coverage or Standard Accidental Rider */}
+                        {isSDPP ? (
+                          <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
+                            <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                              Accidental Coverage
+                            </div>
+                            <div className="bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100 space-y-2">
+                              {/* 1. Accidental Death Benefit */}
+                              <div className="border-b border-emerald-200/50 pb-1.5 flex justify-between items-center">
+                                <div>
+                                  <div className="text-[11px] font-semibold text-emerald-900">Accidental Death Benefit</div>
+                                  <div className="text-[9px] text-emerald-700">
+                                    {input.sdppPlan === 'Prime' ? 'Accidental Cover + Natural Death Cover' : 'Double Sum Assured + Main Life Cover'}
+                                  </div>
+                                </div>
+                                <div className="text-right text-sm font-black font-mono text-emerald-700">
+                                  {input.sdppPlan === 'Prime' ? (
+                                    `${formatCurrency(sdppData?.accidentalBenefit || 0)} + Death Benefit`
+                                  ) : (
+                                    formatCurrency((sdppData?.accidentalBenefit || 0) + (typeof sdppData?.deathBenefit === 'number' ? sdppData.deathBenefit : 0))
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* 2. Accidental Permanent Total Disability (APTD) */}
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <div className="text-[11px] font-semibold text-emerald-900">Accidental Permanent Total Disability (APTD)</div>
+                                  <div className="text-[9px] text-emerald-700">
+                                    Double Sum Assured (200% SA)
+                                  </div>
+                                </div>
+                                <div className="text-right text-sm font-black font-mono text-emerald-700">
+                                  {formatCurrency(sdppData?.accidentalBenefit || 0)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          input.hasAccidentalProtection && (
+                            <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                              <div className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                                Accidental Rider Protection (4 Coverages)
+                              </div>
+                              <div className="space-y-2 bg-emerald-50/50 p-2.5 rounded-lg border border-emerald-100">
+                                <div className="border-b border-emerald-200/50 pb-1.5 space-y-0.5">
+                                  <div className="text-[11px] font-semibold text-emerald-900">1. Accidental Death Benefit (200%)</div>
+                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
+                                    {formatCurrency(input.sumAssured * 2)}
+                                  </div>
+                                </div>
+
+                                <div className="border-b border-emerald-200/50 pb-1.5 space-y-0.5">
+                                  <div className="text-[11px] font-semibold text-emerald-900">2. Accidental Medical Reimbursement (AMR)</div>
+                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
+                                    Up to {formatCurrency(input.sumAssured * 0.15)} <span className="text-[10px] font-bold text-emerald-800">(15%)</span>
+                                  </div>
+                                </div>
+
+                                <div className="border-b border-emerald-200/50 pb-1.5 space-y-0.5">
+                                  <div className="text-[11px] font-semibold text-emerald-900">3. Accidental Permanent Total Disability (APTD)</div>
+                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
+                                    {formatCurrency(input.sumAssured)} <span className="text-[10px] font-bold text-emerald-800">(100%)</span>
+                                  </div>
+                                </div>
+
+                                <div className="space-y-0.5">
+                                  <div className="text-[11px] font-semibold text-emerald-900">4. Accidental Permanent Partial Disability (APPD)</div>
+                                  <div className="text-right text-sm font-black font-mono text-emerald-700">
+                                    Up to {formatCurrency(input.sumAssured)} <span className="text-[10px] font-bold text-emerald-800">(100%)</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </>
