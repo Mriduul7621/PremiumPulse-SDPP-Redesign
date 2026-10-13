@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   X, Download, Printer, Shield, Activity, Sparkles, CheckCircle2, 
   FileText, Calendar, User, Phone, Mail, DollarSign, Clock, HelpCircle,
-  AlertCircle, ChevronRight, Award, Check, Building2, Scale
+  AlertCircle, ChevronRight, Award, Check, Building2, Scale, ZoomIn, ZoomOut, Maximize2
 } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import { CalculationInput, CalculationResult, SDPPResult, ProjectionRow } from '../data/types';
@@ -40,6 +40,7 @@ export default function PlanQuotationModal({
   projectionData = []
 }: PlanQuotationModalProps) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [previewZoom, setPreviewZoom] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640 ? 0.4 : 1);
   const page1Ref = useRef<HTMLDivElement>(null);
   const page2Ref = useRef<HTMLDivElement>(null);
 
@@ -292,8 +293,15 @@ export default function PlanQuotationModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
+            <div className="flex items-center gap-1 rounded-xl bg-slate-800 p-1" aria-label="Quotation preview zoom controls">
+              <button type="button" title="Zoom out" aria-label="Zoom out quotation" onClick={() => setPreviewZoom(z => Math.max(0.3, Math.round((z - 0.1) * 10) / 10))} className="p-1.5 rounded-lg hover:bg-slate-700"><ZoomOut className="w-4 h-4" /></button>
+              <span className="text-[10px] font-bold tabular-nums min-w-8 text-center">{Math.round(previewZoom * 100)}%</span>
+              <button type="button" title="Zoom in" aria-label="Zoom in quotation" onClick={() => setPreviewZoom(z => Math.min(1.5, Math.round((z + 0.1) * 10) / 10))} className="p-1.5 rounded-lg hover:bg-slate-700"><ZoomIn className="w-4 h-4" /></button>
+              <button type="button" title="Fit quotation to screen" aria-label="Fit quotation to screen" onClick={() => setPreviewZoom(Math.min(1, Math.max(0.3, (window.innerWidth - 44) / 800)))} className="p-1.5 rounded-lg hover:bg-slate-700"><Maximize2 className="w-4 h-4" /></button>
+            </div>
             <button
+              title="Print quotation" aria-label="Print quotation"
               onClick={handlePrint}
               className="px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer"
             >
@@ -302,6 +310,7 @@ export default function PlanQuotationModal({
             </button>
 
             <button
+              title="Download PDF" aria-label="Download PDF"
               onClick={handleDownloadPdf}
               disabled={isGeneratingPdf}
               className="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-brand-primary/20 transition-all cursor-pointer disabled:opacity-50"
@@ -309,12 +318,12 @@ export default function PlanQuotationModal({
               {isGeneratingPdf ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Generating...</span>
+                  <span className="hidden sm:inline">Generating...</span>
                 </>
               ) : (
                 <>
                   <Download className="w-4 h-4" />
-                  <span>Download PDF</span>
+                  <span className="hidden sm:inline">Download PDF</span>
                 </>
               )}
             </button>
@@ -329,7 +338,7 @@ export default function PlanQuotationModal({
         </div>
 
         {/* Document Scroll Area */}
-        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"}>
+        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} style={{ zoom: previewZoom }}>
           
           {/* Printable Official Document - PAGE 1 */}
           <div 
