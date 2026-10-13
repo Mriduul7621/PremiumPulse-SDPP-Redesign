@@ -178,6 +178,7 @@
 }
 /* Mobile: a compact, bold arrow directly beneath the app name. */
 @media (max-width: 639px) {
-  .premium-home-action { top: calc(10% + 58px); bottom: auto; width: 64px; }
-  .premium-home-action button { width: 64px; height: 56px; padding: 0; border-radius: 16px; }
+  .premium-home-action { top: calc(10% + 58px); bottom: auto; left: 50%; right: auto; transform: translateX(-50%); width: 48px; }
+  .premium-home-action button { width: 48px; height: 44px; padding: 0; border-radius: 12px; }
+  .premium-home-action svg { width: 22px; height: 22px; stroke-width: 2.5; }
 }
