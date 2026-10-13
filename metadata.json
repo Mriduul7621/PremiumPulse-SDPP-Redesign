@@ -1,0 +1,8 @@
+{
+  "name": "PremiumPulse_v2 ",
+  "description": "Professional insurance benefits calculator for Shanta Life products based on official actuarial rates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

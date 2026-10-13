@@ -1,0 +1,125 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-primary: #0359B3;
+  --color-brand-gold: #978C21;
+  --color-brand-blue: #0359B3;
+  --color-brand-accent: #026A8B;
+  --color-brand-dark: #F8FAFC;
+  --color-brand-card: #FFFFFF;
+  --color-brand-border: #E2E8F0;
+  --color-brand-text: #3C3C3C;
+}
+
+@layer base {
+  body {
+    @apply antialiased bg-brand-dark text-brand-text;
+  }
+}
+
+/* Custom scrollbar for professional look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-brand-dark;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-border rounded-full hover:bg-slate-700 transition-colors;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: white;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #a1a1aa;
+  border: 2px solid white;
+  border-radius: 9999px;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 10mm 10mm;
+  }
+  body, html {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  .fixed.inset-0 {
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+  [data-quotation-content="true"],
+  [data-print-container="true"] {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+  }
+  [data-quotation-content="true"] {
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+  thead {
+    display: table-header-group !important;
+  }
+}
+
+/* SDPP-inspired shared visual language. Presentation only; calculation modules untouched. */
+:root { color-scheme: light; }
+.sdpp-app { background: #f8fafc; min-height: 100vh; }
+.sdpp-topbar { background: #fff; border-bottom: 1px solid #e2e8f0; box-shadow: 0 2px 12px #0f172a08; }
+.sdpp-topbar-inner { max-width: 1280px; margin: auto; padding: 13px 22px; display: flex; align-items: center; gap: 12px; color: #1e293b; }
+.sdpp-topbar-inner strong { display:block; font-size: 17px; line-height: 1.25; letter-spacing: -.03em; }
+.sdpp-topbar-inner span { display:block; font-size: 11px; color: #64748b; }
+.sdpp-logo { width: 38px; height:38px; display:grid; place-items:center; border-radius:10px; background:#0359b3; color:white; }
+.sdpp-topbar-inner .sdpp-version { margin-left:auto; border-radius:7px; background:#eff6ff; color:#0359b3; padding:7px 10px; font-weight:700; }
+.sdpp-app :is(input,select,textarea) { background-color:#fff; color:#334155; border-color:#cbd5e1; border-radius:9px; }
+.sdpp-app :is(input,select,textarea):focus { outline:2px solid #93c5fd; outline-offset:1px; }
+.sdpp-app button { transition: background-color .18s, box-shadow .18s, transform .18s; }
+.sdpp-app button:focus-visible { outline:3px solid #93c5fd; outline-offset:3px; }
+.sdpp-app :is(.rounded-\[2\.5rem\],.rounded-3xl) { border-radius:18px; }
+.sdpp-app .shadow-2xl { box-shadow:0 8px 30px #0f172a12; }
+.sdpp-app .shadow-xl { box-shadow:0 5px 20px #0f172a0e; }
+.sdpp-app .tracking-\[0\.3em\], .sdpp-app .tracking-\[0\.2em\] { letter-spacing:.08em; }
+.sdpp-app .bg-slate-950 { background-color:#fff; }
+.sdpp-app .text-slate-400 { color:#64748b; }
+.sdpp-app .text-slate-500 { color:#64748b; }
+.sdpp-app .bg-brand-dark\/70 { background-color:#fff; }
+.sdpp-app .bg-brand-dark\/50 { background-color:#f8fafc; }
+.sdpp-app table { border-collapse:collapse; width:100%; }
+.sdpp-app th { background:#eff6ff; color:#1e3a5f; }
+.sdpp-app tr { border-bottom:1px solid #e2e8f0; }
+@media(max-width:640px) { .sdpp-topbar-inner { padding:11px 14px; } .sdpp-topbar-inner .sdpp-version { display:none; } .sdpp-app table { font-size:12px; } }
+@media print { .sdpp-topbar { display:none!important; } .sdpp-app { background:#fff!important; } }
