@@ -2980,7 +2980,7 @@ export default function Calculator() {
                          )}
                          {(input.hasCIClassic || input.hasCIStandard) && (
                            <li className="flex flex-col gap-0 border-b border-brand-primary/10 pb-2 md:pb-4 last:border-0 last:pb-0">
-                              <span className="text-[11px] md:text-[12px] text-slate-400 font-black uppercase tracking-widest">Primary Policy Critical Protection</span>
+                              <span className="text-[11px] md:text-[12px] text-slate-400 font-black uppercase tracking-widest">{input.hasCIClassic ? 'Critical Illness Classic' : 'Critical Illness Standard'}</span><button type="button" onClick={()=>setCiInfoView(input.hasCIClassic ? 'classic' : 'standard')} className="self-start mt-1 text-[12px] md:text-sm font-extrabold text-brand-primary underline underline-offset-4 hover:opacity-75" aria-label="View covered critical illness diseases">View Diseases →</button>
                               <span className="text-[14px] md:text-xl font-black text-brand-text">{formatCurrency(Math.min(input.sumAssured * 0.5, 3000000))}</span>
                               <span className="text-[11px] md:text-[12px] text-slate-400 font-bold uppercase mt-0.5">50% SA Rider Protection</span>
                             </li>
