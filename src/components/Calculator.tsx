@@ -3096,7 +3096,7 @@ export default function Calculator() {
                     <div className="mb-8 md:mb-12 flex flex-wrap items-center justify-between gap-3">
                       <button 
                         onClick={() => setAppState('inputs')}
-                        className="flex items-center gap-2 text-[10px] font-black text-brand-primary uppercase tracking-[0.2em] bg-brand-dark border border-slate-200 px-5 py-3 md:px-6 rounded-full shadow-sm hover:bg-white transition-all cursor-pointer"
+                        className="flex items-center gap-2 text-[10px] font-semibold text-brand-text tracking-wide bg-white border border-[#d9ddcb] p-3 sm:px-5 sm:py-3 rounded-xl shadow-sm hover:bg-[#f4f5e9] transition-all cursor-pointer"
                       >
                         <Home className="w-4 h-4" /> <span className="hidden md:inline">Edit Policy</span>
                       </button>
@@ -3104,7 +3104,7 @@ export default function Calculator() {
                       <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
                         <button 
                           onClick={() => setShowTermComparisonModal(true)}
-                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-4 sm:px-5 py-3 rounded-full shadow-lg bg-emerald-800 text-white hover:bg-emerald-700 transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-2 text-[10px] font-semibold tracking-wide p-3 sm:px-5 sm:py-3 rounded-xl shadow-sm bg-brand-primary text-white hover:bg-[#81771c] transition-all cursor-pointer min-w-11"
                           title="Compare all available terms for this policy" aria-label="Term Comparison PDF"
                         >
                           <BarChart3 className="w-4 h-4 text-emerald-200" /> 
@@ -3113,7 +3113,7 @@ export default function Calculator() {
 
                         <button 
                           onClick={() => setShowQuotationModal(true)}
-                          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 md:px-6 rounded-full shadow-lg bg-brand-primary text-white hover:bg-brand-primary/90 transition-all cursor-pointer"
+                          className="flex items-center justify-center gap-2 text-[10px] font-semibold tracking-wide p-3 sm:px-5 sm:py-3 rounded-xl shadow-sm bg-white border border-[#d9ddcb] text-brand-text hover:bg-[#f4f5e9] transition-all cursor-pointer min-w-11"
                         >
                           <FileText className="w-4 h-4 text-white" /> 
                           <span className="hidden sm:inline">Plan Quotation (PDF)</span>
