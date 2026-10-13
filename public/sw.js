@@ -1,5 +1,5 @@
-const CACHE = 'premium-pulse-offline-v1';
-const APP_SHELL = ['/', '/index.html', '/shanta-life-logo.png'];
+const CACHE = 'premium-pulse-offline-v2';
+const APP_SHELL = ['/', '/index.html', '/shanta-life-logo.png', '/premium-pulse-app-icon.png', '/manifest.webmanifest'];
 const EXTERNAL_ARTWORK = [
   'https://raw.githubusercontent.com/mriduultnd/PremiumPulse-SDPP-Redesign/main/Premium%20Pulse%20Laptop%20BG.jpg',
   'https://raw.githubusercontent.com/mriduultnd/PremiumPulse-SDPP-Redesign/main/Premium%20Pulse%20Mobile%20App%20BG.jpg'
