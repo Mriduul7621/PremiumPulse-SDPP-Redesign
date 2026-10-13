@@ -229,23 +229,17 @@ export default function PlanQuotationModal({
       const pdfWidth = 210;
       const pdfHeight = 297;
 
-      // Slice the bitmap rather than repositioning an oversized image across PDF
-      // pages; this prevents shifted, clipped and duplicated illustration content.
+      // Each preview part is one complete A4 PDF page: Part 1 on page 1,
+      // and the entire Part 2 on page 2. Never split one part across pages.
       const appendPage = (canvas: HTMLCanvasElement, first: boolean) => {
-        const sliceHeight = Math.round(canvas.width * pdfHeight / pdfWidth);
-        for (let y = 0; y < canvas.height; y += sliceHeight) {
-          if (!first || y > 0) pdf.addPage();
-          const piece = document.createElement('canvas');
-          piece.width = canvas.width;
-          piece.height = Math.min(sliceHeight, canvas.height - y);
-          const context = piece.getContext('2d');
-          if (!context) throw new Error('PDF canvas context unavailable');
-          context.fillStyle = '#ffffff';
-          context.fillRect(0, 0, piece.width, piece.height);
-          context.drawImage(canvas, 0, y, piece.width, piece.height, 0, 0, piece.width, piece.height);
-          pdf.addImage(piece.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth,
-            piece.height * pdfWidth / piece.width, undefined, 'FAST');
-        }
+        if (!canvas.width || !canvas.height) throw new Error('Empty quotation capture');
+        if (!first) pdf.addPage();
+        const scale = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+        const renderedWidth = canvas.width * scale;
+        const renderedHeight = canvas.height * scale;
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG',
+          (pdfWidth - renderedWidth) / 2, 0, renderedWidth, renderedHeight,
+          undefined, 'FAST');
       };
 
       appendPage(await capturePage(page1Ref.current, '1'), true);
