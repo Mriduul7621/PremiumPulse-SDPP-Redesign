@@ -15,6 +15,7 @@ interface PlanQuotationModalProps {
   onClose: () => void;
   embedded?: boolean;
   showProjection?: boolean;
+  onViewDiseases?: (type: 'classic' | 'standard') => void;
   input: CalculationInput;
   selectedProduct?: CalculationResult;
   sdppData?: SDPPResult;
@@ -31,6 +32,7 @@ export default function PlanQuotationModal({
   onClose,
   embedded = false,
   showProjection = true,
+  onViewDiseases,
   input,
   selectedProduct,
   sdppData,
@@ -1049,7 +1051,7 @@ export default function PlanQuotationModal({
                               Living Benefit - Critical Illness (CI)
                             </div>
                             <div className="bg-purple-50/50 p-2.5 rounded-lg border border-purple-100 space-y-0.5">
-                              <div className="text-[11px] font-semibold text-purple-900">Critical Illness Coverage</div>
+                              <div className="text-[11px] font-semibold text-purple-900">{input.hasCIClassic ? 'Critical Illness Classic' : input.hasCIStandard ? 'Critical Illness Standard' : 'Critical Illness Coverage'}</div>{(input.hasCIClassic || input.hasCIStandard) && onViewDiseases && <button type="button" onClick={()=>onViewDiseases(input.hasCIClassic ? 'classic' : 'standard')} className="text-[11px] font-extrabold text-brand-primary underline underline-offset-2 print:hidden">View Diseases →</button>}
                               <div className="text-right text-sm font-black font-mono text-purple-700">
                                 Up to {formatCurrency(isSDPP ? (sdppData?.ciCoverage || 0) : (input.ciCoverage || Math.min(input.sumAssured * 0.5, 3000000)))}
                               </div>
