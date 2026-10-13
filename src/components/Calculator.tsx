@@ -503,39 +503,29 @@ export default function Calculator() {
 
   // Sub-renderers
   const renderHome = () => (
-    <div className="premium-home-bg relative min-h-[calc(100dvh-76px)] w-full flex items-center justify-center overflow-hidden bg-[#f7f8ef]">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+    <div className="premium-home-bg relative min-h-[calc(100dvh-76px)] w-full overflow-hidden bg-[#f7f8ef]">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-20 w-full max-w-4xl px-5 text-center space-y-7 py-16"
+        className="premium-home-title absolute z-20"
       >
-        <div className="space-y-4">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-brand-text tracking-tight leading-tight">
-            Premium<span className="text-brand-primary">Pulse</span>
-          </h1>
-        </div>
-
-        <div className="flex justify-center pt-12 md:pt-8">
-          <button 
-            onClick={() => setAppState('inputs')}
-            className="w-full max-w-[280px] md:max-w-xs py-3.5 md:py-4 bg-brand-primary text-white font-semibold tracking-wide rounded-xl hover:bg-[#81771c] transition-all flex items-center justify-center gap-3 group shadow-sm text-sm md:text-base"
-          >
-            Start Valuation
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 text-[10px] md:text-xs text-slate-600 font-medium tracking-wide pt-6 md:pt-10">
-          <div className="flex items-center gap-2">
-            <Zap className="w-3.5 h-3.5 text-brand-primary" /> Instant Results
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-brand-primary" /> Secure Data
-          </div>
-          <div className="flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-brand-primary" /> Live Valuation
-          </div>
-        </div>
+        <h1 className="text-4xl md:text-6xl font-extrabold text-brand-text tracking-tight leading-tight whitespace-nowrap">
+          Premium<span className="text-brand-primary">Pulse</span>
+        </h1>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+        className="premium-home-action absolute z-20"
+      >
+        <button
+          onClick={() => setAppState('inputs')}
+          className="w-full py-3.5 md:py-4 px-7 bg-brand-primary text-white font-semibold tracking-wide rounded-xl hover:bg-[#81771c] transition-all flex items-center justify-center gap-3 group shadow-sm text-sm md:text-base"
+        >
+          Start Valuation
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </button>
       </motion.div>
     </div>
   );
