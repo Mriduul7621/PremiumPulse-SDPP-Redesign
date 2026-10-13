@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { sanitizeClonedDocForPdf } from '../lib/pdfColorSanitizer';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -188,7 +189,58 @@ export default function Calculator() {
   const [ciInfoView, setCiInfoView] = useState<'classic' | 'standard' | null>(null);
   const [isExportingSection, setIsExportingSection] = useState(false);
   const printSection = (id: string) => { const el = document.getElementById(id); if (!el) return; const w = window.open('', '_blank'); if (!w) return; w.document.write('<html><head><title>PremiumPulse Comparison</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#36403b}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f0f1df}@page{size:landscape;margin:12mm}</style></head><body>'+el.innerHTML+'</body></html>'); w.document.close(); w.focus(); w.print(); };
-  const downloadSection = async (id: string, filename: string) => { const el = document.getElementById(id); if (!el || isExportingSection) return; setIsExportingSection(true); try { const canvas = await html2canvas(el, {scale:2,backgroundColor:'#ffffff',onclone: doc => { const target=doc.getElementById(id); if(target){target.style.width='1000px';target.style.maxWidth='none';target.style.overflow='visible';} }}); const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'}); const width=277, height=canvas.height*width/canvas.width; const pageHeight=190; let offset=0; while(offset<height){if(offset>0)pdf.addPage();pdf.addImage(canvas.toDataURL('image/png'),'PNG',10,10-offset,width,height);offset+=pageHeight;} pdf.save(filename); } catch(error){console.error('Section PDF export failed',error);alert('PDF could not be generated. Please use Print.');} finally{setIsExportingSection(false);} };
+  const downloadSection = async (id: string, filename: string) => {
+    const el = document.getElementById(id);
+    if (!el || isExportingSection) return;
+    setIsExportingSection(true);
+    try {
+      if ('fonts' in document) await document.fonts.ready;
+      const canvas = await html2canvas(el, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff',
+        scrollX: 0, scrollY: 0,
+        onclone: doc => {
+          sanitizeClonedDocForPdf(doc);
+          const target = doc.getElementById(id);
+          if (target) {
+            target.style.width = '1000px';
+            target.style.minWidth = '1000px';
+            target.style.maxWidth = 'none';
+            target.style.height = 'auto';
+            target.style.maxHeight = 'none';
+            target.style.overflow = 'visible';
+            target.style.transform = 'none';
+            target.style.backgroundColor = '#ffffff';
+          }
+          doc.querySelectorAll('[data-pdf-hide="true"]').forEach(node => {
+            (node as HTMLElement).style.display = 'none';
+          });
+        }
+      });
+      if (!canvas.width || !canvas.height) throw new Error('Empty comparison capture');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const width = 277;
+      const availableHeight = 190;
+      const slicePx = Math.max(1, Math.floor(canvas.width * availableHeight / width));
+      for (let y = 0; y < canvas.height; y += slicePx) {
+        if (y) pdf.addPage();
+        const piece = document.createElement('canvas');
+        piece.width = canvas.width;
+        piece.height = Math.min(slicePx, canvas.height - y);
+        const ctx = piece.getContext('2d');
+        if (!ctx) throw new Error('Unable to capture comparison page');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, piece.width, piece.height);
+        ctx.drawImage(canvas, 0, y, piece.width, piece.height, 0, 0, piece.width, piece.height);
+        pdf.addImage(piece.toDataURL('image/png'), 'PNG', 10, 10, width, piece.height * width / piece.width, undefined, 'FAST');
+      }
+      pdf.save(filename);
+    } catch (error) {
+      console.error('Section PDF export failed', error);
+      alert('PDF could not be generated. Please use Print.');
+    } finally {
+      setIsExportingSection(false);
+    }
+  };
   const [showQuotationModal, setShowQuotationModal] = useState<boolean>(false);
   const [showTermComparisonModal, setShowTermComparisonModal] = useState<boolean>(false);
   const [showPlanMenu, setShowPlanMenu] = useState(false);
