@@ -14,6 +14,7 @@ import { sanitizeClonedDocForPdf } from '../lib/pdfColorSanitizer';
 
 interface TermComparisonModalProps {
   isOpen: boolean;
+  embedded?: boolean;
   onClose: () => void;
   input: CalculationInput;
   selectedProduct?: CalculationResult;
@@ -50,6 +51,7 @@ export interface TermComparisonItem {
 
 export default function TermComparisonModal({
   isOpen,
+  embedded = false,
   onClose,
   input,
   selectedProduct,
@@ -307,12 +309,12 @@ export default function TermComparisonModal({
   const todayFormatted = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 print:p-0 print:bg-white print:static print:overflow-visible">
+    <div className={embedded ? "w-full" : "fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 print:p-0 print:bg-white print:static print:overflow-visible"}>
       {/* Modal Container */}
-      <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[94vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden relative print:shadow-none print:border-none print:max-h-none print:w-full print:rounded-none">
+      <div className={embedded ? "w-full bg-white rounded-2xl border border-[#e5e8df] overflow-hidden" : "bg-white rounded-2xl w-full max-w-5xl max-h-[94vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden relative print:shadow-none print:border-none print:max-h-none print:w-full print:rounded-none"}>
         
         {/* Top Sticky Header (Hidden in Print) */}
-        <div className="p-3 sm:p-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 print:hidden shrink-0">
+        <div className={embedded ? "hidden" : "p-3 sm:p-4 bg-slate-900 text-white flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 print:hidden shrink-0"}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center text-brand-primary">
               <Scale className="w-4 h-4" />
@@ -364,16 +366,16 @@ export default function TermComparisonModal({
         </div>
 
         {/* Scrollable Printable Content Area */}
-        <div className="flex-1 overflow-y-auto p-2 sm:p-5 bg-slate-100 print:p-0 print:bg-white print:overflow-visible">
+        <div className={embedded ? "p-3 sm:p-5 bg-white" : "flex-1 overflow-y-auto p-2 sm:p-5 bg-slate-100 print:p-0 print:bg-white print:overflow-visible"}>
           
           <div 
             ref={printContainerRef} 
             data-print-container="true" 
-            className="bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4 max-w-[794px] mx-auto print:border-none print:shadow-none print:p-0"
+            className={embedded ? "bg-white space-y-4 w-full" : "bg-white p-4 sm:p-6 rounded-xl border border-slate-200 shadow-sm space-y-4 max-w-[794px] mx-auto print:border-none print:shadow-none print:p-0"}
           >
             
             {/* Printable Official Header */}
-            <div className="flex justify-between items-start border-b-2 border-slate-900 pb-2.5">
+            <div className={embedded ? "hidden" : "flex justify-between items-start border-b-2 border-slate-900 pb-2.5"}>
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 bg-brand-primary rounded-lg flex items-center justify-center text-white font-black text-sm tracking-tighter shadow-sm">
                   SL
@@ -571,7 +573,7 @@ export default function TermComparisonModal({
         </div>
 
         {/* Bottom Modal Action Footer (Hidden in Print) */}
-        <div className="p-3 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 print:hidden shrink-0">
+        <div className={embedded ? "hidden" : "p-3 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 print:hidden shrink-0"}>
           <div className="flex items-center gap-1.5 text-xs text-slate-600">
             <Info className="w-3.5 h-3.5 text-brand-primary" />
             <span>Currently viewing: <strong className="text-slate-900">{planTitle} ({input.term} Years)</strong></span>
