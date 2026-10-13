@@ -334,7 +334,7 @@ export default function PlanQuotationModal({
             ref={page1Ref}
             data-quotation-content="true"
             data-page="1"
-            className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }} print:break-after-page"
+            className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}
           >
             
             {/* Header / Letterhead */}
@@ -1328,7 +1328,7 @@ export default function PlanQuotationModal({
               ref={page2Ref}
               data-quotation-content="true"
               data-page="2"
-              className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}"
+              className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}
             >
               {/* Page 2 Header Banner */}
               <div className="flex justify-between items-center border-b border-slate-200 pb-3">
