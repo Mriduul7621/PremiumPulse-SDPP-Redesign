@@ -161,3 +161,12 @@
     opacity: 0.19;
   }
 }
+
+/* Place landing content around the artwork rather than over its focal circle. */
+.premium-home-title { top: 12%; left: 6%; text-align: left; }
+.premium-home-action { right: 7%; bottom: 11%; width: min(300px, 36vw); }
+@media (max-width: 639px) {
+  .premium-home-title { top: 10%; left: 0; right: 0; padding: 0 12px; text-align: center; }
+  .premium-home-title h1 { font-size: clamp(30px, 9vw, 42px); }
+  .premium-home-action { top: 74%; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); width: min(280px, calc(100% - 40px)); }
+}
