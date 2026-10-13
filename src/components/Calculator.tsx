@@ -491,14 +491,14 @@ export default function Calculator() {
 
   // Sub-renderers
   const renderHome = () => (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-950">
+    <div className="relative min-h-[calc(100dvh-76px)] w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f7f8ef] via-white to-[#eeefda]">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-20 w-full max-w-4xl px-4 text-center space-y-8"
+        className="relative z-20 w-full max-w-4xl px-5 text-center space-y-7 py-16"
       >
         <div className="space-y-4">
-          <h1 className="text-3xl md:text-5xl font-black text-brand-text tracking-tighter uppercase leading-[0.9]">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-brand-text tracking-tight leading-tight">
             Premium<span className="text-brand-primary">Pulse</span>
           </h1>
         </div>
@@ -506,14 +506,14 @@ export default function Calculator() {
         <div className="flex justify-center pt-12 md:pt-8">
           <button 
             onClick={() => setAppState('inputs')}
-            className="w-full max-w-[280px] md:max-w-sm py-5 md:py-6 bg-brand-primary text-white font-black uppercase tracking-[0.2em] rounded-full hover:bg-brand-primary/90 transition-all flex items-center justify-center gap-3 group shadow-2xl shadow-brand-primary/40 transform hover:scale-105 active:scale-95 text-sm md:text-base"
+            className="w-full max-w-[280px] md:max-w-xs py-3.5 md:py-4 bg-brand-primary text-white font-semibold tracking-wide rounded-xl hover:bg-[#81771c] transition-all flex items-center justify-center gap-3 group shadow-sm text-sm md:text-base"
           >
             Start Valuation
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
-        <div className="flex items-center justify-center gap-6 md:gap-8 text-[11px] md:text-[13px] text-slate-500 font-black uppercase tracking-widest pt-6 md:pt-10">
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 text-[10px] md:text-xs text-slate-600 font-medium tracking-wide pt-6 md:pt-10">
           <div className="flex items-center gap-2">
             <Zap className="w-3.5 h-3.5 text-brand-primary" /> Instant Results
           </div>
@@ -567,7 +567,7 @@ export default function Calculator() {
     return (
       <div className="w-full max-w-5xl lg:max-w-7xl 2xl:max-w-[1550px] mx-auto space-y-4 my-auto">
         {/* Full Screen / Full Width White Card Container */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] border border-slate-200/90 shadow-2xl p-4 sm:p-6 md:p-8 space-y-5 transition-all duration-300 text-slate-800">
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-[#e5e8df] shadow-sm p-4 sm:p-6 md:p-8 space-y-5 transition-all duration-300 text-brand-text">
           
           {/* Header & Sample-style Radio Selector at Top */}
           <div className="space-y-4 border-b border-slate-100 pb-4">
@@ -581,10 +581,10 @@ export default function Calculator() {
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div>
-                  <h2 className="text-base sm:text-lg md:text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">
+                  <h2 className="text-base sm:text-lg md:text-2xl font-bold text-brand-text tracking-tight leading-tight">
                     Plan Configuration Calculator
                   </h2>
-                  <p className="text-[10px] sm:text-[11px] md:text-xs text-slate-500 font-bold uppercase tracking-widest italic mt-0.5">
+                  <p className="text-[10px] sm:text-[11px] md:text-xs text-slate-500 font-medium tracking-normal mt-1">
                     Personalize your coverage strategy & parameters
                   </p>
                 </div>
