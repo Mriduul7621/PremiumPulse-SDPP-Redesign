@@ -166,8 +166,8 @@ export default function PlanQuotationModal({
           backgroundColor: '#ffffff',
           width: 800,
           height: 1131,
-          windowWidth: 1200,
-          windowHeight: 1200,
+          windowWidth: 800,
+          windowHeight: 1131,
           onclone: (clonedDoc) => {
             // Thoroughly sanitize all modern CSS colors (oklab, oklch, color-mix) in cloned document
             sanitizeClonedDocForPdf(clonedDoc);
@@ -327,14 +327,14 @@ export default function PlanQuotationModal({
         </div>
 
         {/* Document Scroll Area */}
-        <div className="overflow-y-auto p-4 sm:p-8 md:p-12 space-y-8 bg-slate-50/50 print:p-0 print:overflow-visible text-slate-800 font-sans" id="quotation-document">
+        <div className="overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans" id="quotation-document">
           
           {/* Printable Official Document - PAGE 1 */}
           <div 
             ref={page1Ref}
             data-quotation-content="true"
             data-page="1"
-            className="bg-white p-6 sm:p-10 md:p-12 rounded-2xl border border-slate-200 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0 print:break-after-page"
+            className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }} print:break-after-page"
           >
             
             {/* Header / Letterhead */}
@@ -1328,7 +1328,7 @@ export default function PlanQuotationModal({
               ref={page2Ref}
               data-quotation-content="true"
               data-page="2"
-              className="bg-white p-6 sm:p-10 md:p-12 rounded-2xl border border-slate-200 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0"
+              className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}"
             >
               {/* Page 2 Header Banner */}
               <div className="flex justify-between items-center border-b border-slate-200 pb-3">
