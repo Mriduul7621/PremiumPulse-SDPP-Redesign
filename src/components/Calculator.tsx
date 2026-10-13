@@ -498,19 +498,9 @@ export default function Calculator() {
         className="relative z-20 w-full max-w-4xl px-4 text-center space-y-8"
       >
         <div className="space-y-4">
-          <motion.div 
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            className="inline-block px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-brand-primary font-black uppercase tracking-[0.3em] text-[11px]"
-          >
-            Intelligent Protection
-          </motion.div>
           <h1 className="text-3xl md:text-5xl font-black text-brand-text tracking-tighter uppercase leading-[0.9]">
             Premium<span className="text-brand-primary">Pulse</span>
           </h1>
-          <p className="text-base md:text-2xl text-slate-400 font-medium tracking-tight max-w-2xl mx-auto px-6">
-            A clear, easy-to-read dashboard for premium calculations, policy benefits and year-wise projections.
-          </p>
         </div>
 
         <div className="flex justify-center pt-12 md:pt-8">
