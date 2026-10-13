@@ -811,12 +811,13 @@ export default function Calculator() {
                                 key={item.id}
                                 type="button"
                                 onClick={() => { 
-                                  setSelectedProductId(item.id); 
-                                  setShowPlanMenu(false); 
                                   if (item.id === 'sdpp') {
-                                    handleInputChange('inputMode', 'Premium');
-                                    handleInputChange('paymentMethod', 'Monthly');
-                                  } else if (item.id === 'sspe' || item.id === 'scep_single') {
+                                    window.location.assign('https://sdpp-value-projection.vercel.app/');
+                                    return;
+                                  }
+                                  setSelectedProductId(item.id);
+                                  setShowPlanMenu(false);
+                                  if (item.id === 'sspe' || item.id === 'scep_single') {
                                     handleInputChange('paymentMethod', 'Single');
                                   }
                                 }}
