@@ -503,7 +503,7 @@ export default function Calculator() {
 
   // Sub-renderers
   const renderHome = () => (
-    <div className="relative min-h-[calc(100dvh-76px)] w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#f7f8ef] via-white to-[#eeefda]">
+    <div className="premium-home-bg relative min-h-[calc(100dvh-76px)] w-full flex items-center justify-center overflow-hidden bg-[#f7f8ef]">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
