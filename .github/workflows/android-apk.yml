@@ -42,6 +42,34 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Apply PremiumPulse Android launcher icon
+        run: |
+          python -m pip install --quiet Pillow
+          python - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          import shutil
+
+          source = Path('public/premium-pulse-app-icon.png')
+          if not source.is_file():
+              raise FileNotFoundError(f'Missing original PremiumPulse icon: {source}')
+          icon = Image.open(source).convert('RGBA')
+          # Keep the entire supplied artwork, including any transparent padding.
+          for density, size in [('mdpi', 48), ('hdpi', 72), ('xhdpi', 96), ('xxhdpi', 144), ('xxxhdpi', 192)]:
+              directory = Path('android/app/src/main/res') / f'mipmap-{density}'
+              directory.mkdir(parents=True, exist_ok=True)
+              artwork = icon.copy()
+              artwork.thumbnail((size, size), Image.Resampling.LANCZOS)
+              canvas = Image.new('RGBA', (size, size), (255, 255, 255, 0))
+              canvas.alpha_composite(artwork, ((size - artwork.width) // 2, (size - artwork.height) // 2))
+              for name in ('ic_launcher.png', 'ic_launcher_round.png'):
+                  canvas.save(directory / name)
+          # Capacitor's generated adaptive icon otherwise overrides the PNG icon on Android 8+.
+          adaptive = Path('android/app/src/main/res/mipmap-anydpi-v26')
+          if adaptive.exists():
+              shutil.rmtree(adaptive)
+          print('PremiumPulse original artwork applied to Android launcher icons.')
+          PY
       - name: Build installable debug APK
         working-directory: android
         run: bash ./gradlew assembleDebug --no-daemon
