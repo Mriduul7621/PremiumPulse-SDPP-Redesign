@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   X, Download, Printer, Shield, Activity, Sparkles, CheckCircle2, 
   FileText, Calendar, User, Phone, Mail, DollarSign, Clock, HelpCircle,
-  AlertCircle, ChevronRight, Award, Check, Building2, Scale, ZoomIn, ZoomOut, Maximize2
+  AlertCircle, ChevronRight, Award, Check, Building2, Scale
 } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import { CalculationInput, CalculationResult, SDPPResult, ProjectionRow } from '../data/types';
@@ -42,7 +42,7 @@ export default function PlanQuotationModal({
   projectionData = []
 }: PlanQuotationModalProps) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const [previewZoom, setPreviewZoom] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640 ? 0.4 : 1);
+  
   const page1Ref = useRef<HTMLDivElement>(null);
   const page2Ref = useRef<HTMLDivElement>(null);
 
@@ -280,28 +280,8 @@ export default function PlanQuotationModal({
       <div className={embedded ? "w-full min-w-0 flex flex-col bg-slate-100 print:bg-white" : "bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 print:max-h-none print:shadow-none print:border-none print:rounded-none print:w-full"}>
         
         {/* Modal Action Header (Hidden when printing) */}
-        <div className="bg-slate-900 text-white p-4 md:px-8 flex items-center justify-between border-b border-slate-800 print:hidden flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center text-brand-primary">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-black uppercase tracking-tight text-white">
-                Plan Quotation & Benefit Illustration
-              </h3>
-              <p className="text-[10px] text-slate-400 font-medium">
-                Sample Proposal Document
-              </p>
-            </div>
-          </div>
-
+        <div className={cn("bg-slate-900 text-white p-3 md:px-8 flex items-center justify-end border-b border-slate-800 print:hidden flex-shrink-0", embedded && "bg-white border-[#e5e8df]")}>
           <div className="flex items-center gap-1.5 sm:gap-3">
-            <div className="flex items-center gap-1 rounded-xl bg-slate-800 p-1" aria-label="Quotation preview zoom controls">
-              <button type="button" title="Zoom out" aria-label="Zoom out quotation" onClick={() => setPreviewZoom(z => Math.max(0.3, Math.round((z - 0.1) * 10) / 10))} className="p-1.5 rounded-lg hover:bg-slate-700"><ZoomOut className="w-4 h-4" /></button>
-              <span className="text-[10px] font-bold tabular-nums min-w-8 text-center">{Math.round(previewZoom * 100)}%</span>
-              <button type="button" title="Zoom in" aria-label="Zoom in quotation" onClick={() => setPreviewZoom(z => Math.min(1.5, Math.round((z + 0.1) * 10) / 10))} className="p-1.5 rounded-lg hover:bg-slate-700"><ZoomIn className="w-4 h-4" /></button>
-              <button type="button" title="Fit quotation to screen" aria-label="Fit quotation to screen" onClick={() => setPreviewZoom(Math.min(1, Math.max(0.3, (window.innerWidth - 44) / 800)))} className="p-1.5 rounded-lg hover:bg-slate-700"><Maximize2 className="w-4 h-4" /></button>
-            </div>
             <button
               title="Print quotation" aria-label="Print quotation"
               onClick={handlePrint}
@@ -340,7 +320,7 @@ export default function PlanQuotationModal({
         </div>
 
         {/* Document Scroll Area */}
-        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} style={{ zoom: previewZoom }}>
+        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} style={embedded ? { touchAction: "pan-x pan-y pinch-zoom" } : undefined}>
           
           {/* Printable Official Document - PAGE 1 */}
           <div 
