@@ -148,6 +148,18 @@ export const getHIRate = (age: number, term: number): number => {
   return rates[termIdx] || 0;
 };
 
+// Source SDPP age-nearest-birthday rule: round up when completed extra months >= 6.
+const calculateSDPPAge = (dob: string, purchaseDate: string): number => {
+  const birth = new Date(dob);
+  const purchase = new Date(purchaseDate);
+  if (Number.isNaN(birth.getTime()) || Number.isNaN(purchase.getTime())) return 0;
+  let years = purchase.getFullYear() - birth.getFullYear();
+  let months = purchase.getMonth() - birth.getMonth();
+  if (purchase.getDate() < birth.getDate()) months--;
+  if (months < 0) { years--; months += 12; }
+  return years + (months >= 6 ? 1 : 0);
+};
+
 // Main Run Calculations function for SDPP
 export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
   const { 
@@ -160,11 +172,12 @@ export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
     gender, 
     dailyHospitalCoverage = 0, 
     projectionMonth = 0,
-    age,
+    age: inputAge,
     ciCoverage
   } = inputs;
   
   const errors: string[] = [];
+  const age = dob && purchaseDate ? calculateSDPPAge(dob, purchaseDate) : inputAge;
   const pTerm = Number(policyTerm);
   const pMonth = Number(projectionMonth) || 0;
 
