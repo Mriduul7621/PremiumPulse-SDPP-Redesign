@@ -521,10 +521,11 @@ export default function Calculator() {
       >
         <button
           onClick={() => setAppState('inputs')}
+          aria-label="Start Valuation"
           className="w-full py-3.5 md:py-4 px-7 bg-brand-primary text-white font-semibold tracking-wide rounded-xl hover:bg-[#81771c] transition-all flex items-center justify-center gap-3 group shadow-sm text-sm md:text-base"
         >
-          Start Valuation
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <span className="hidden sm:inline">Start Valuation</span>
+          <ArrowRight className="w-7 h-7 sm:w-5 sm:h-5 stroke-[3] group-hover:translate-x-1 transition-transform" />
         </button>
       </motion.div>
     </div>
