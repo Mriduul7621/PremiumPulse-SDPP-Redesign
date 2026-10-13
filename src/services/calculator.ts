@@ -21,7 +21,7 @@ import { getCIRate } from '../lib/rateLookup';
 const ACCIDENTAL_RATE = 5.57; // per 1000
 
 export function calculateSAFromPremium(input: CalculationInput, selectedProductId: string): number {
-  const { age, term, targetPremium, gender, hasAccidentalProtection, hasCIClassic, hasCIStandard, paymentMethod } = input;
+  const { age, term, targetPremium, paymentMethod } = input;
   if (!targetPremium || targetPremium <= 0) return input.sumAssured;
 
   // We need to find the rate for the selected product
@@ -65,35 +65,13 @@ export function calculateSAFromPremium(input: CalculationInput, selectedProductI
   const modalFactor = MODAL_FACTORS[paymentMethod] || 1;
   const isSinglePremiumPlan = product.id.startsWith('scep_single_');
 
-  // Premium = (SA/1000) * (BaseRate + RiderRates) * (isSingle ? 1 : modalFactor)
-  // Let R = BaseRate
-  let riderRates = 0;
-  if (hasAccidentalProtection) riderRates += ACCIDENTAL_RATE;
-  
-  let ciRate = 0;
-  if (hasCIClassic) ciRate += getCIRate(age, term, gender, 'Classic');
-  if (hasCIStandard) ciRate += getCIRate(age, term, gender, 'Standard');
-
+  // Target Premium fixes the BASIC policy premium and determines its Sum Assured.
+  // Optional rider charges are calculated afterwards from that resulting SA;
+  // they must not reduce SA or be deducted from the target base premium.
   const effectiveModalFactor = isSinglePremiumPlan ? 1 : modalFactor;
-
-  // Try with CI
-  // CI Premium behaves piece-wise:
-  // - If sa <= 6000000: ciPremium = sa * 0.5 * ciRate / 1000 => effective CI rate per 1000 SA is 0.5 * ciRate
-  // - If sa > 6000000: ciPremium = 3000000 * ciRate / 1000 = 3000 * ciRate (constant)
-  let sa = (targetPremium * 1000) / (effectiveModalFactor * (baseRate + riderRates + 0.5 * ciRate));
-
-  if (sa > 6000000) {
-    // Recalculate using Case 2 (capped at 3,000,000 rider coverage)
-    const termsInMode = (targetPremium / effectiveModalFactor) - (ciRate * 3000);
-    sa = (termsInMode * 1000) / (baseRate + riderRates);
-  }
-
-  if (sa < 200000 && (hasCIClassic || hasCIStandard)) {
-    // Recalculate without CI
-    sa = (targetPremium * 1000) / (effectiveModalFactor * (baseRate + riderRates));
-  }
-
+  const sa = (targetPremium * 1000) / (effectiveModalFactor * baseRate);
   return Math.ceil(sa / 1000) * 1000; // Round up to nearest 1000
+
 }
 
 export function calculateProjection(input: CalculationInput, selectedProductId: string): ProjectionRow[] {
