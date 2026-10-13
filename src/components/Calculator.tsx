@@ -17,6 +17,9 @@ import { differenceInYears, parse, format } from 'date-fns';
 import PlanQuotationModal from './PlanQuotationModal';
 import TermComparisonModal from './TermComparisonModal';
 
+const CLASSIC_CI_DISEASES = ["ক্যান্সার","হার্ট অ্যাটাক","স্ট্রোক","করোনারি-আর্টারি বাইপাস সার্জারি","কিডনি ফেইলিউর","প্রধান অঙ্গ প্রতিস্থাপন","প্যারালাইসিস","অন্ধত্ব","মাল্টিপল স্কলেরোসিস","হার্ট ভালভ প্রতিস্থাপন","অ্যাওটিক আর্টারির সার্জারি","বেনাইন ব্রেইন টিউমার","পালমোনারি হাইপারটেনশন","আলঝেইমার রোগ","তৃতীয় মাত্রার দগ্ধ","কোমা","শেষ পর্যায়ের ফুসফুসের রোগ","শেষ পর্যায়ের যকৃতের রোগ","ফালমিনেন্ট ভাইরাল হেপাটাইটিস"];
+const MINOR_CI_DISEASES = ["সেরিব্রাল শান্ট ইনসার্শন","কার্সিনোমা ইন সিটু","হৃৎপিন্ডের ধমনিতে অ্যাঞ্জিওপ্লাস্টি ও ধমনীর অনান্য চিকিৎসা","ক্ষুদ্রান্ত্র প্রতিস্থাপন","কার্ডিয়াক পেসমেকার বা ডিফিব্রিলেটর ইনসারশন","দুর্ঘটনায় ক্ষতিগ্রস্ত মুখমণ্ডলে অস্ত্রোপচারের মাধ্যমে পুনর্গঠন","প্রাথমিক পর্যায়ে পারকিনসন্স রোগ","প্রাথমিক পর্যায়ে আলঝেইমার রোগ","মাল্টিপল স্কলেরোসিস","হার্ট ভালভ প্রতিস্থাপন"];
+const MAJOR_CI_DISEASES = ["কিডনি ফেইলর","ক্যান্সার","স্ট্রোক","মেজর অর্গান ট্রান্সপ্লান্ট","মায়োকার্ডিয়াল ইনফার্কশন","একাধিক স্ক্লেরোসিস","করোনারি আর্টারি বাই-পাস সার্জারি","প্যারালাইসিস","অন্ধত্ব","হার্ট ভালভ প্রতিস্থাপন","তৃতীয় ডিগ্রি বার্নস","মহাধমনীর অস্ত্রোপচার","শেষ পর্যায়ে ফুসফুসের রোগ","শেষ পর্যায়ে লিভার ডিজিজ","ফুলমিন্যান্ট ভাইরাল হেপাটাইটিস"];
 const FREQUENCIES: PlanFrequency[] = ['Monthly', 'Quarterly', 'Half-yearly', 'Yearly', 'Single'];
 const GENDERS: Gender[] = ['Male', 'Female'];
 
@@ -180,6 +183,7 @@ export default function Calculator() {
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
   const [previewSection, setPreviewSection] = useState<'quotation' | 'term' | 'policy' | 'liquidity'>('quotation');
   const [liquidityDetails, setLiquidityDetails] = useState(false);
+  const [ciInfoView, setCiInfoView] = useState<'classic' | 'standard' | null>(null);
   const [isExportingSection, setIsExportingSection] = useState(false);
   const printSection = (id: string) => { const el = document.getElementById(id); if (!el) return; const w = window.open('', '_blank'); if (!w) return; w.document.write('<html><head><title>PremiumPulse Comparison</title><style>body{font-family:Arial,sans-serif;padding:24px;color:#36403b}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f0f1df}@page{size:landscape;margin:12mm}</style></head><body>'+el.innerHTML+'</body></html>'); w.document.close(); w.focus(); w.print(); };
   const downloadSection = async (id: string, filename: string) => { const el = document.getElementById(id); if (!el || isExportingSection) return; setIsExportingSection(true); try { const canvas = await html2canvas(el, {scale:2,backgroundColor:'#ffffff',onclone: doc => { const target=doc.getElementById(id); if(target){target.style.width='1000px';target.style.maxWidth='none';target.style.overflow='visible';} }}); const pdf = new jsPDF({orientation:'landscape',unit:'mm',format:'a4'}); const width=277, height=canvas.height*width/canvas.width; const pageHeight=190; let offset=0; while(offset<height){if(offset>0)pdf.addPage();pdf.addImage(canvas.toDataURL('image/png'),'PNG',10,10-offset,width,height);offset+=pageHeight;} pdf.save(filename); } catch(error){console.error('Section PDF export failed',error);alert('PDF could not be generated. Please use Print.');} finally{setIsExportingSection(false);} };
@@ -1324,7 +1328,7 @@ export default function Calculator() {
                         </div>
                         <div>
                           <p className="text-xs font-black text-slate-900 uppercase">Standard Critical Illness</p>
-                          <p className="text-[9px] text-slate-500 font-medium">Protection for 25 illnesses</p>
+                          <p className="text-[9px] text-slate-500 font-medium">10 minor and 15 major illnesses</p>
                         </div>
                       </div>
                       <div className={cn(
@@ -2825,13 +2829,13 @@ export default function Calculator() {
                    )}
                    {input.hasCIClassic && (
                      <div className="flex justify-between items-center text-[9px] md:text-sm">
-                       <span className="text-slate-500 font-bold uppercase tracking-widest text-[7px] md:text-xs">CI Classic Protection</span>
+                       <span className="text-slate-500 font-bold uppercase tracking-widest text-[7px] md:text-xs">Critical Illness Classic <button type="button" aria-label="View Critical Illness Classic diseases" title="Covered diseases" onClick={()=>setCiInfoView('classic')} className="inline-flex align-middle ml-1 text-brand-primary"><Info className="w-4 h-4"/></button></span>
                        <span className="text-brand-text font-black font-mono">{formatCurrency(selectedProduct?.ciClassicPremium?.[input.paymentMethod] || 0)}</span>
                      </div>
                    )}
                    {input.hasCIStandard && (
                      <div className="flex justify-between items-center text-[9px] md:text-sm">
-                       <span className="text-slate-500 font-bold uppercase tracking-widest text-[7px] md:text-xs">Standard CI Protection</span>
+                       <span className="text-slate-500 font-bold uppercase tracking-widest text-[7px] md:text-xs">Critical Illness Standard <button type="button" aria-label="View Critical Illness Standard diseases" title="Covered diseases" onClick={()=>setCiInfoView('standard')} className="inline-flex align-middle ml-1 text-brand-primary"><Info className="w-4 h-4"/></button></span>
                        <span className="text-brand-text font-black font-mono">{formatCurrency(selectedProduct?.ciStandardPremium?.[input.paymentMethod] || 0)}</span>
                      </div>
                    )}
@@ -3137,6 +3141,8 @@ export default function Calculator() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {ciInfoView && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label="Critical illness diseases"><div className="w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-xl"><div className="flex items-center justify-between gap-2 mb-4"><h2 className="font-bold text-lg text-brand-text">Critical Illness {ciInfoView === 'classic' ? 'Classic' : 'Standard'}</h2><div className="flex gap-2"><button type="button" title="Download disease list" aria-label="Download disease list" onClick={()=>downloadSection('ci-disease-content',ciInfoView+'-critical-illness.pdf')} className="rounded-lg border p-2"><Download className="w-5 h-5"/></button><button type="button" title="Close" aria-label="Close disease list" onClick={()=>setCiInfoView(null)} className="rounded-lg border p-2"><X className="w-5 h-5"/></button></div></div><div id="ci-disease-content" className="space-y-5 bg-white p-2 text-brand-text"><h3 className="font-bold">Critical Illness {ciInfoView === 'classic'?'Classic':'Standard'}</h3>{ciInfoView === 'classic' ? <section><p className="text-sm font-semibold mb-2">19 covered diseases · Coverage: {formatCurrency(Math.min(input.sumAssured*.5,3000000))}</p><ol className="list-decimal pl-6 space-y-1 text-sm">{CLASSIC_CI_DISEASES.map(d=><li key={d}>{d}</li>)}</ol></section> : <><section><h4 className="font-bold">Minor Critical Illness (10)</h4><p className="text-sm mb-2">30% of CI coverage: {formatCurrency(Math.min(input.sumAssured*.5,3000000)*.3)}</p><ol className="list-decimal pl-6 space-y-1 text-sm">{MINOR_CI_DISEASES.map(d=><li key={d}>{d}</li>)}</ol></section><section><h4 className="font-bold">Major Critical Illness (15)</h4><p className="text-sm mb-2">If Minor claimed: 70% — {formatCurrency(Math.min(input.sumAssured*.5,3000000)*.7)}. If Minor not claimed: 100% — {formatCurrency(Math.min(input.sumAssured*.5,3000000))}.</p><ol className="list-decimal pl-6 space-y-1 text-sm">{MAJOR_CI_DISEASES.map(d=><li key={d}>{d}</li>)}</ol></section></>}</div></div></div>}
 
       <PlanQuotationModal
         isOpen={showQuotationModal}
