@@ -133,7 +133,6 @@ export default function Calculator() {
   const [input, setInput] = useState<CalculationInput>(INITIAL_INPUT);
 
   const [appState, setAppState] = useState<'home' | 'inputs' | 'results'>('home');
-  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
@@ -630,7 +629,6 @@ export default function Calculator() {
             </div>
           </div>
 
-          <div className="flex gap-2 rounded-xl bg-[#f8f9f3] border border-[#e5e8df] p-2">{(['Personal','Plan','Riders'] as const).map((name,index) => <button key={name} type="button" onClick={() => setWizardStep((index+1) as 1|2|3)} className={cn('flex-1 rounded-lg py-2.5 text-xs font-semibold',wizardStep===index+1?'bg-brand-primary text-white shadow-sm':'text-brand-text hover:bg-white')}>{index+1}. {name}</button>)}</div>
           {/* Grid Layout for Policy Inputs */}
           <div className={cn(
             "grid grid-cols-1 gap-5 lg:gap-8 items-start transition-all duration-500",
@@ -660,7 +658,6 @@ export default function Calculator() {
                 )}
               </div>
 
-              {wizardStep === 1 && (<>
               {/* STEP 1: IDENTITY (Gender, DOB, Age) & Issue Date */}
               <div className={cn(
                 "p-4 rounded-2xl border transition-all duration-300 space-y-3",
@@ -747,8 +744,6 @@ export default function Calculator() {
                 </div>
               </div>
 
-              </>)}
-              {wizardStep === 2 && (<>
               {/* STEP 2: PRODUCT SELECTION */}
               <div className={cn(
                 "p-4 rounded-2xl border transition-all duration-300 space-y-3",
@@ -1204,8 +1199,6 @@ export default function Calculator() {
                 })()}
               </div>
 
-              </>)}
-              {wizardStep === 3 && (<>
               {/* STEP 7: ADDITIONAL RIDERS (OPTIONAL) */}
               {!isSDPP && !isSinglePremiumProduct && (
                 <div className={cn(
@@ -1565,7 +1558,6 @@ export default function Calculator() {
             )}
           </div>
 
-              </>)}
           {/* Validation Errors Notice */}
           {Object.keys(validationErrors).length > 0 && isStep6Complete && (
             <div className="bg-red-50 border border-red-200 rounded-2xl p-3 space-y-1 text-xs text-red-700">
@@ -1604,8 +1596,8 @@ export default function Calculator() {
               </button>
 
               <button 
-                onClick={() => { if (wizardStep < 3) setWizardStep((wizardStep+1) as 1|2|3); else setAppState('results'); }}
-                disabled={(wizardStep === 1 && !isStep1Complete) || (wizardStep === 2 && !isStep6Complete) || (wizardStep === 3 && (!isComboFullyComplete || Object.keys(validationErrors).length > 0))}
+                onClick={() => setAppState('results')}
+                disabled={!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0}
                 className={cn(
                   "rounded-full px-7 py-3 font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-lg",
                   (!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0)
@@ -1613,7 +1605,7 @@ export default function Calculator() {
                     : "bg-brand-primary text-white hover:bg-brand-primary/90 shadow-brand-primary/25 active:scale-95"
                 )}
               >
-                {wizardStep < 3 ? "Next" : "View Calculation Result"}
+                View Valuation Result
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
