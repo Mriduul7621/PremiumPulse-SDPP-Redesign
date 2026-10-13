@@ -1154,7 +1154,7 @@ export default function PlanQuotationModal({
                         </div>
 
                         {/* Living Benefit - Critical Illness */}
-                        {(input.hasCIClassic || input.hasCIStandard || input.ciCoverage || sdppData?.ciCoverage) && (
+                        {(isSDPP ? Boolean(sdppData?.ciCoverage) : Boolean(input.hasCIClassic || input.hasCIStandard || input.ciCoverage)) && (
                           <div className="pt-2 border-t border-slate-200/80 space-y-1.5">
                             <div className="text-[10px] font-black uppercase tracking-wider text-purple-800">
                               Living Benefit - Critical Illness (CI)
@@ -1162,7 +1162,7 @@ export default function PlanQuotationModal({
                             <div className="bg-purple-50/50 p-2.5 rounded-lg border border-purple-100 space-y-0.5">
                               <div className="text-[11px] font-semibold text-purple-900">Critical Illness Coverage</div>
                               <div className="text-right text-sm font-black font-mono text-purple-700">
-                                Up to {formatCurrency(input.ciCoverage || sdppData?.ciCoverage || Math.min(input.sumAssured * 0.5, 3000000))}
+                                Up to {formatCurrency(isSDPP ? (sdppData?.ciCoverage || 0) : (input.ciCoverage || Math.min(input.sumAssured * 0.5, 3000000)))}
                               </div>
                             </div>
                           </div>
