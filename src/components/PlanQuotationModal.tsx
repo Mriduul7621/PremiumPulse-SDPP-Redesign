@@ -1004,6 +1004,25 @@ export default function PlanQuotationModal({
                   </div>
                 </div>
 
+                {/* Compare all calculated payment modes; preserve the selected mode emphasis. */}
+                {!isSDPP && selectedProduct?.totalPremium && (
+                  <div className="space-y-2 print:break-inside-avoid">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">Premium by Payment Frequency</h3>
+                      <span className="text-[10px] text-slate-500">Selected mode highlighted</span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {(['Monthly', 'Quarterly', 'Half-yearly', 'Yearly'] as const).map(mode => (
+                        <div key={mode} className={cn('rounded-lg border p-2.5 text-center', input.paymentMethod === mode ? 'border-brand-primary bg-brand-primary/10 ring-1 ring-brand-primary' : 'border-slate-200 bg-white')}>
+                          <div className={cn('text-[10px] uppercase tracking-wide', input.paymentMethod === mode ? 'font-black text-brand-primary' : 'font-semibold text-slate-500')}>{mode}{input.paymentMethod === mode ? ' • Selected' : ''}</div>
+                          <div className={cn('mt-1 font-mono text-sm', input.paymentMethod === mode ? 'font-black text-brand-primary' : 'font-semibold text-slate-800')}>{formatCurrency(selectedProduct.totalPremium[mode] ?? 0)}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {input.paymentMethod === 'Single' && <div className="rounded-lg border border-brand-primary bg-brand-primary/10 p-2.5 text-center font-black text-brand-primary">Single Premium (Selected): {formatCurrency(selectedProduct.totalPremium.Single ?? 0)}</div>}
+                  </div>
+                )}
+
                 {/* Coverage & Benefit Highlights */}
                 <div className="space-y-3">
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b-2 border-slate-200 pb-2">
