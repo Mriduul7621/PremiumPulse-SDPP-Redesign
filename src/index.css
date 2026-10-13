@@ -5,11 +5,11 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --color-brand-primary: #0359B3;
+  --color-brand-primary: #F3702B;
   --color-brand-gold: #978C21;
   --color-brand-blue: #0359B3;
-  --color-brand-accent: #026A8B;
-  --color-brand-dark: #F8FAFC;
+  --color-brand-accent: #0359B3;
+  --color-brand-dark: #FFF9F4;
   --color-brand-card: #FFFFFF;
   --color-brand-border: #E2E8F0;
   --color-brand-text: #3C3C3C;
@@ -103,8 +103,8 @@
 .sdpp-topbar-inner { max-width: 1280px; margin: auto; padding: 13px 22px; display: flex; align-items: center; gap: 12px; color: #1e293b; }
 .sdpp-topbar-inner strong { display:block; font-size: 17px; line-height: 1.25; letter-spacing: -.03em; }
 .sdpp-topbar-inner span { display:block; font-size: 11px; color: #64748b; }
-.sdpp-logo { width: 38px; height:38px; display:grid; place-items:center; border-radius:10px; background:#0359b3; color:white; }
-.sdpp-topbar-inner .sdpp-version { margin-left:auto; border-radius:7px; background:#eff6ff; color:#0359b3; padding:7px 10px; font-weight:700; }
+.sdpp-logo { width: 38px; height:38px; display:grid; place-items:center; border-radius:10px; background:#f3702b; color:white; }
+.sdpp-topbar-inner .sdpp-version { margin-left:auto; border-radius:7px; background:#fff1e6; color:#a94514; padding:7px 10px; font-weight:700; }
 .sdpp-app :is(input,select,textarea) { background-color:#fff; color:#334155; border-color:#cbd5e1; border-radius:9px; }
 .sdpp-app :is(input,select,textarea):focus { outline:2px solid #93c5fd; outline-offset:1px; }
 .sdpp-app button { transition: background-color .18s, box-shadow .18s, transform .18s; }
@@ -119,7 +119,7 @@
 .sdpp-app .bg-brand-dark\/70 { background-color:#fff; }
 .sdpp-app .bg-brand-dark\/50 { background-color:#f8fafc; }
 .sdpp-app table { border-collapse:collapse; width:100%; }
-.sdpp-app th { background:#eff6ff; color:#1e3a5f; }
+.sdpp-app th { background:#fff1e6; color:#7f2d23; }
 .sdpp-app tr { border-bottom:1px solid #e2e8f0; }
 @media(max-width:640px) { .sdpp-topbar-inner { padding:11px 14px; } .sdpp-topbar-inner .sdpp-version { display:none; } .sdpp-app table { font-size:12px; } }
 @media print { .sdpp-topbar { display:none!important; } .sdpp-app { background:#fff!important; } }
