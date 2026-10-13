@@ -3115,10 +3115,10 @@ export default function Calculator() {
                         <button 
                           onClick={() => setShowTermComparisonModal(true)}
                           className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-4 sm:px-5 py-3 rounded-full shadow-lg bg-emerald-800 text-white hover:bg-emerald-700 transition-all cursor-pointer"
-                          title="Compare all available terms for this policy"
+                          title="Compare all available terms for this policy" aria-label="Term Comparison PDF"
                         >
                           <BarChart3 className="w-4 h-4 text-emerald-200" /> 
-                          <span>Term Comparison (PDF)</span>
+                          <span className="hidden sm:inline">Term Comparison (PDF)</span>
                         </button>
 
                         <button 
@@ -3126,7 +3126,7 @@ export default function Calculator() {
                           className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 md:px-6 rounded-full shadow-lg bg-brand-primary text-white hover:bg-brand-primary/90 transition-all cursor-pointer"
                         >
                           <FileText className="w-4 h-4 text-white" /> 
-                          <span>Plan Quotation (PDF)</span>
+                          <span className="hidden sm:inline">Plan Quotation (PDF)</span>
                         </button>
 
                         <button 
