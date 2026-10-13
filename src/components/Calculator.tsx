@@ -672,6 +672,7 @@ export default function Calculator() {
               </div>
 
               <div className={wizardStep === 1 ? 'space-y-4' : 'hidden'}>
+              <div className="rounded-2xl border border-[#e5e8df] bg-white p-4 space-y-3"><div><h4 className="text-sm font-bold text-brand-text">Customer Details <span className="text-xs font-medium text-slate-500">(Optional)</span></h4><p className="text-xs text-slate-500">These details will appear on the benefit illustration when provided.</p></div><div className="grid grid-cols-1 sm:grid-cols-2 gap-3"><label className="space-y-1 text-xs font-semibold text-brand-text">Customer Name<input type="text" autoComplete="name" value={input.name || ''} onChange={e=>handleInputChange('name',e.target.value)} placeholder="Enter customer name" className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-brand-primary"/></label><label className="space-y-1 text-xs font-semibold text-brand-text">Mobile Number<input type="tel" autoComplete="tel" inputMode="tel" value={input.phone || ''} onChange={e=>handleInputChange('phone',e.target.value)} placeholder="Enter mobile number" className="block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none focus:border-brand-primary"/></label></div></div>
               {/* STEP 1: IDENTITY (Gender, DOB, Age) & Issue Date */}
               <div className={cn(
                 "p-4 rounded-2xl border transition-all duration-300 space-y-3",
@@ -1619,7 +1620,7 @@ export default function Calculator() {
                 disabled={(wizardStep === 1 && !isStep1Complete) || (wizardStep === 2 && !isStep6Complete) || (wizardStep === 3 && (!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0))}
                 className={cn(
                   "rounded-full px-7 py-3 font-black text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-lg",
-                  (!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0)
+                  ((wizardStep === 1 && !isStep1Complete) || (wizardStep === 2 && !isStep6Complete) || (wizardStep === 3 && (!isStep6Complete || !isComboFullyComplete || Object.keys(validationErrors).length > 0)))
                     ? "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
                     : "bg-brand-primary text-white hover:bg-brand-primary/90 shadow-brand-primary/25 active:scale-95"
                 )}
