@@ -3142,7 +3142,22 @@ export default function Calculator() {
                         </button>
                       </div>
                     </div>
-                    {isCompareMode ? renderCompareMode() : renderResults()}
+                    {isCompareMode ? renderCompareMode() : (
+                      <PlanQuotationModal
+                        embedded
+                        isOpen={true}
+                        onClose={() => setAppState('inputs')}
+                        input={input}
+                        selectedProduct={selectedProduct}
+                        sdppData={sdppData}
+                        isComboEnabled={isComboEnabled}
+                        sdppComboData={sdppComboData}
+                        comboSdppPlan={comboSdppPlan}
+                        comboSdppPaymentMethod={comboSdppPaymentMethod}
+                        comboSdppDeposit={comboSdppDeposit}
+                        projectionData={projectionData}
+                      />
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
