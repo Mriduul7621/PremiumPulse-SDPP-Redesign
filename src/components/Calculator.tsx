@@ -138,7 +138,7 @@ export default function Calculator() {
   const [input, setInput] = useState<CalculationInput>(INITIAL_INPUT);
 
   const [appState, setAppState] = useState<'home' | 'inputs' | 'results'>('home');
-  const [activeCalculator, setActiveCalculator] = useState<'premium' | 'official' | 'income' | 'tax'>('premium');
+  const [activeCalculator, setActiveCalculator] = useState<'premium' | 'official' | 'income' | 'tax' | 'sdpp'>('premium');
   const [calculatorMenuOpen, setCalculatorMenuOpen] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -3074,7 +3074,8 @@ export default function Calculator() {
               ['premium', 'Premium Calculator'],
               ['official', 'Official Calculator'],
               ['income', 'Income Calculator'],
-              ['tax', 'Tax Calculator']
+              ['tax', 'Tax Calculator'],
+              ['sdpp', 'SDPP Calculator']
             ] as const).map(([key, label]) => <button key={key} type="button" role="menuitem" onClick={() => { setActiveCalculator(key); setCalculatorMenuOpen(false); }} className={cn('flex w-full items-center justify-between rounded-lg px-3 py-3 text-left text-sm font-semibold transition-colors', activeCalculator === key ? 'bg-[#f3f1df] text-[#776d17]' : 'text-brand-text hover:bg-[#f5f6ef]')}>{label}{activeCalculator === key && <Check className="h-4 w-4" />}</button>)}
           </div>}
         </div>
@@ -3083,10 +3084,10 @@ export default function Calculator() {
       {activeCalculator !== 'premium' ? (
         <section className="relative z-10 w-full bg-white" aria-label="Embedded calculator">
           <div className="flex items-center justify-between gap-3 border-b border-[#e5e8df] px-4 py-2">
-            <span className="text-sm font-semibold">{activeCalculator === 'official' ? 'Official Calculator' : activeCalculator === 'income' ? 'Income Calculator' : 'Tax Calculator'}</span>
-            <a href={activeCalculator === 'official' ? 'https://shantalife.com/premium-calculator' : activeCalculator === 'income' ? 'https://incomecalculator-delta.vercel.app/' : 'https://shantalife.com/tax-calculator#tax-calculator'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-semibold text-[#81771c]">Open original <ExternalLink className="h-3.5 w-3.5" /></a>
+            <span className="text-sm font-semibold">{activeCalculator === 'official' ? 'Official Calculator' : activeCalculator === 'income' ? 'Income Calculator' : activeCalculator === 'tax' ? 'Tax Calculator' : 'SDPP Calculator'}</span>
+            <a href={activeCalculator === 'official' ? 'https://shantalife.com/premium-calculator' : activeCalculator === 'income' ? 'https://incomecalculator-delta.vercel.app/' : activeCalculator === 'tax' ? 'https://shantalife.com/tax-calculator#tax-calculator' : 'https://sdpp-value-projection.vercel.app/'} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-semibold text-[#81771c]">Open original <ExternalLink className="h-3.5 w-3.5" /></a>
           </div>
-          <iframe key={activeCalculator} title={activeCalculator + ' calculator'} src={activeCalculator === 'official' ? 'https://shantalife.com/premium-calculator' : activeCalculator === 'income' ? 'https://incomecalculator-delta.vercel.app/' : 'https://shantalife.com/tax-calculator#tax-calculator'} className="block w-full border-0 bg-white" style={{ height: 'calc(100dvh - 126px)', minHeight: 600 }} />
+          <iframe key={activeCalculator} title={activeCalculator + ' calculator'} src={activeCalculator === 'official' ? 'https://shantalife.com/premium-calculator' : activeCalculator === 'income' ? 'https://incomecalculator-delta.vercel.app/' : activeCalculator === 'tax' ? 'https://shantalife.com/tax-calculator#tax-calculator' : 'https://sdpp-value-projection.vercel.app/'} className="block w-full border-0 bg-white" style={{ height: 'calc(100dvh - 126px)', minHeight: 600 }} />
           <p className="px-4 py-2 text-xs text-slate-500">If this website restricts in-app viewing, use Open original above.</p>
         </section>
       ) : <AnimatePresence mode="wait">
