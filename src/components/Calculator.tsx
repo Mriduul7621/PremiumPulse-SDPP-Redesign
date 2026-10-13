@@ -3102,47 +3102,12 @@ export default function Calculator() {
                     exit={{ opacity: 0 }}
                     className="w-full"
                   >
-                    <div className="mb-8 md:mb-12 flex flex-wrap items-center justify-between gap-3">
-                      <button 
-                        onClick={() => setAppState('inputs')}
-                        className="flex items-center gap-2 text-[10px] font-semibold text-brand-text tracking-wide bg-white border border-[#d9ddcb] p-3 sm:px-5 sm:py-3 rounded-xl shadow-sm hover:bg-[#f4f5e9] transition-all cursor-pointer"
-                      >
-                        <Home className="w-4 h-4" /> <span className="hidden md:inline">Edit Policy</span>
-                      </button>
-
-                      <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
-                        <button 
-                          onClick={() => setShowTermComparisonModal(true)}
-                          className="flex items-center justify-center gap-2 text-[10px] font-semibold tracking-wide p-3 sm:px-5 sm:py-3 rounded-xl shadow-sm bg-brand-primary text-white hover:bg-[#81771c] transition-all cursor-pointer min-w-11"
-                          title="Compare all available terms for this policy" aria-label="Term Comparison PDF"
-                        >
-                          <BarChart3 className="w-4 h-4 text-emerald-200" /> 
-                          <span className="hidden sm:inline">Term Comparison (PDF)</span>
-                        </button>
-
-                        <button 
-                          onClick={() => setShowQuotationModal(true)}
-                          className="flex items-center justify-center gap-2 text-[10px] font-semibold tracking-wide p-3 sm:px-5 sm:py-3 rounded-xl shadow-sm bg-white border border-[#d9ddcb] text-brand-text hover:bg-[#f4f5e9] transition-all cursor-pointer min-w-11"
-                        >
-                          <FileText className="w-4 h-4 text-white" /> 
-                          <span className="hidden sm:inline">Plan Quotation (PDF)</span>
-                        </button>
-
-                        <button 
-                          onClick={() => setIsCompareMode(!isCompareMode)}
-                          className={cn(
-                            "flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-3 md:px-6 rounded-full shadow-lg transition-all cursor-pointer",
-                            isCompareMode 
-                              ? "bg-brand-primary text-white" 
-                              : "bg-brand-dark border border-slate-200 text-brand-text hover:bg-white"
-                          )}
-                        >
-                          <ArrowLeftRight className="w-4 h-4" /> 
-                          <span className="hidden md:inline">{isCompareMode ? 'View Selected Plan' : 'Compare All Plans'}</span>
-                        </button>
-                      </div>
+                    <div className="flex items-center justify-between mb-5"><button onClick={() => {setAppState('inputs');setWizardStep(3);}} className="flex items-center gap-2 rounded-xl border border-[#e5e8df] bg-white px-3 py-2 text-sm"><ArrowLeft className="w-4 h-4"/> Back</button><h2 className="text-lg font-bold text-brand-text">Quotation Preview</h2><span className="w-14"/></div>
+                    <div className="grid grid-cols-4 gap-2 mb-5 rounded-2xl border border-[#e5e8df] bg-white p-2">
+                      {([{id:'quotation',label:'Quotation',Icon:FileText},{id:'term',label:'Term Comparison',Icon:BarChart3},{id:'policy',label:'Policy Comparison',Icon:ArrowLeftRight},{id:'liquidity',label:'Liquidity',Icon:Activity}] as const).map(({id,label,Icon})=><button key={id} type="button" onClick={()=>setPreviewSection(id)} className={cn('min-h-16 flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[10px] sm:text-xs font-semibold',previewSection===id?'bg-brand-primary text-white':'bg-[#f7f8ef] text-brand-text')}><Icon className="w-5 h-5"/><span className="text-center leading-tight">{label}</span></button>)}
                     </div>
-                    {isCompareMode ? renderCompareMode() : (
+                    {previewSection === 'quotation' ? (<>
+
                       <PlanQuotationModal
                         embedded
                         isOpen={true}
@@ -3157,7 +3122,7 @@ export default function Calculator() {
                         comboSdppDeposit={comboSdppDeposit}
                         projectionData={projectionData}
                       />
-                    )}
+                    </>) : previewSection === 'term' ? <div className="rounded-2xl border border-[#e5e8df] bg-white p-5 space-y-4"><h3 className="font-bold">Term Comparison</h3><p className="text-sm text-slate-600">Compare available policy terms and download the detailed comparison.</p><button onClick={()=>setShowTermComparisonModal(true)} className="w-full rounded-xl bg-brand-primary py-3 font-semibold text-white">View Details →</button></div> : previewSection === 'policy' ? <div className="space-y-4"><div className="rounded-2xl border border-[#e5e8df] bg-white p-5 space-y-3"><h3 className="font-bold">Policy Comparison</h3><button onClick={()=>setIsCompareMode(v=>!v)} className="w-full rounded-xl bg-brand-primary py-3 font-semibold text-white">{isCompareMode?'Hide Details':'View Details →'}</button></div>{isCompareMode && renderCompareMode()}</div> : <div className="rounded-2xl border border-[#e5e8df] bg-white p-5 space-y-4"><h3 className="font-bold">Liquidity View</h3><p className="text-sm text-slate-600">Explore the year-wise policy projection and its available values.</p><button onClick={()=>setShowQuotationModal(true)} className="w-full rounded-xl bg-brand-primary py-3 font-semibold text-white">View Detailed Projection →</button></div>}
                   </motion.div>
                 )}
               </AnimatePresence>
