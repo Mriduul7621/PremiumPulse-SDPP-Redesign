@@ -1,3 +1,4 @@
+import { savePdf } from '../lib/savePdf';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { sanitizeClonedDocForPdf } from '../lib/pdfColorSanitizer';
@@ -233,7 +234,7 @@ export default function Calculator() {
         ctx.drawImage(canvas, 0, y, piece.width, piece.height, 0, 0, piece.width, piece.height);
         pdf.addImage(piece.toDataURL('image/png'), 'PNG', 10, 10, width, piece.height * width / piece.width, undefined, 'FAST');
       }
-      pdf.save(filename);
+      await savePdf(pdf, filename);
     } catch (error) {
       console.error('Section PDF export failed', error);
       alert('PDF could not be generated. Please use Print.');
