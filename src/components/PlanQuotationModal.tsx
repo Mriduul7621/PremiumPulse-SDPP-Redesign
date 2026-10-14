@@ -1,3 +1,4 @@
+import { savePdf } from '../lib/savePdf';
 import React, { useState, useRef } from 'react';
 import { 
   X, Download, Printer, Shield, Activity, Sparkles, CheckCircle2, 
@@ -257,7 +258,7 @@ export default function PlanQuotationModal({
         : (selectedProduct?.productName || 'Plan');
       const sanitizedProductName = rawProductName.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
-      pdf.save(`${sanitizedProductName}_Sample_Quotation_${dateStr}_${timeStr}.pdf`);
+      await savePdf(pdf, `${sanitizedProductName}_Sample_Quotation_${dateStr}_${timeStr}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
