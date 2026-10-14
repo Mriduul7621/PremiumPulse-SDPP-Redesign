@@ -1,3 +1,4 @@
+import { savePdf } from '../lib/savePdf';
 import React, { useState, useRef, useMemo } from 'react';
 import { 
   X, Printer, Download, Clock, Shield, Sparkles, Check, 
@@ -297,7 +298,7 @@ export default function TermComparisonModal({
 
       const planTitle = selectedProduct?.productName || 'Policy';
       const cleanName = (input.name || 'Client').replace(/[^a-zA-Z0-9]/g, '_');
-      pdf.save(`ShantaLife_Term_Comparison_${cleanName}_${planTitle}.pdf`);
+      await savePdf(pdf, `ShantaLife_Term_Comparison_${cleanName}_${planTitle}.pdf`);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
     } finally {
