@@ -176,6 +176,7 @@ export default function PlanQuotationModal({
   const handleDownloadPdf = async () => {
     if (!page1Ref.current) return;
     setIsGeneratingPdf(true);
+    let exportStage = 'Preparing quotation';
 
     try {
       if ('fonts' in document) {
@@ -187,7 +188,8 @@ export default function PlanQuotationModal({
       const capturePage = async (element: HTMLElement, pageNum: string) => {
         const pageHeight = Math.max(1131, element.scrollHeight);
         return html2canvas(element, {
-          scale: 2,
+          // Lower canvas memory usage on Android WebView to prevent silent export termination.
+          scale: 1.25,
           useCORS: true,
           logging: false,
           backgroundColor: '#ffffff',
@@ -238,13 +240,15 @@ export default function PlanQuotationModal({
         const scale = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
         const renderedWidth = canvas.width * scale;
         const renderedHeight = canvas.height * scale;
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG',
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG',
           (pdfWidth - renderedWidth) / 2, 0, renderedWidth, renderedHeight,
           undefined, 'FAST');
       };
 
+      exportStage = 'Rendering quotation page 1';
       appendPage(await capturePage(page1Ref.current, '1'), true);
       if (!isComboEnabled && !isSDPP && page2Ref.current) {
+        exportStage = 'Rendering quotation page 2';
         appendPage(await capturePage(page2Ref.current, '2'), false);
       }
 
@@ -258,10 +262,11 @@ export default function PlanQuotationModal({
         : (selectedProduct?.productName || 'Plan');
       const sanitizedProductName = rawProductName.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
+      exportStage = 'Opening Android save/share';
       await savePdf(pdf, `${sanitizedProductName}_Sample_Quotation_${dateStr}_${timeStr}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Unable to save PDF. Please try again.');
+      alert(`Quotation PDF failed at: ${exportStage}. ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsGeneratingPdf(false);
     }
