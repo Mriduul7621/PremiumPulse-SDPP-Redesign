@@ -246,24 +246,34 @@ export default function PlanQuotationModal({
       const contentWidth = pdfWidth - pageMargin * 2;
       const contentHeight = pdfHeight - pageMargin * 2;
 
-      // Each preview part is one complete A4 PDF page: Part 1 on page 1,
-      // and the entire Part 2 on page 2. Never split one part across pages.
-      const appendPage = (canvas: HTMLCanvasElement, first: boolean) => {
+      // Keep every quotation page at the same readable A4 width as the disclaimer.
+      // Never shrink an entire tall quotation to fit one sheet: continue on another A4 sheet.
+      let hasPdfPage = false;
+      const appendPage = (canvas: HTMLCanvasElement) => {
         if (!canvas.width || !canvas.height) throw new Error('Empty quotation capture');
-        if (!first) pdf.addPage();
-        const scale = Math.min(contentWidth / canvas.width, contentHeight / canvas.height);
-        const renderedWidth = canvas.width * scale;
-        const renderedHeight = canvas.height * scale;
-        pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG',
-          (pdfWidth - renderedWidth) / 2, (pdfHeight - renderedHeight) / 2, renderedWidth, renderedHeight,
-          undefined, 'FAST');
+        const pixelsPerSheet = Math.max(1, Math.floor(canvas.width * contentHeight / contentWidth));
+        for (let top = 0; top < canvas.height; top += pixelsPerSheet) {
+          if (hasPdfPage) pdf.addPage();
+          hasPdfPage = true;
+          const slice = document.createElement('canvas');
+          slice.width = canvas.width;
+          slice.height = Math.min(pixelsPerSheet, canvas.height - top);
+          const context = slice.getContext('2d');
+          if (!context) throw new Error('Unable to render quotation PDF page');
+          context.fillStyle = '#ffffff';
+          context.fillRect(0, 0, slice.width, slice.height);
+          context.drawImage(canvas, 0, top, slice.width, slice.height, 0, 0, slice.width, slice.height);
+          const renderedHeight = slice.height * contentWidth / slice.width;
+          pdf.addImage(slice.toDataURL('image/jpeg', 0.88), 'JPEG', pageMargin, pageMargin,
+            contentWidth, renderedHeight, undefined, 'FAST');
+        }
       };
 
       exportStage = 'Rendering quotation page 1';
-      appendPage(await capturePage(page1Ref.current, '1'), true);
+      appendPage(await capturePage(page1Ref.current, '1'));
       if (!isComboEnabled && !isSDPP && page2Ref.current) {
-        exportStage = 'Rendering quotation page 2';
-        appendPage(await capturePage(page2Ref.current, '2'), false);
+        exportStage = 'Rendering disclaimer';
+        appendPage(await capturePage(page2Ref.current, '2'));
       }
 
       const now = new Date();
