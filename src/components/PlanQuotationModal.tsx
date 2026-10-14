@@ -1,5 +1,5 @@
 import { savePdf } from '../lib/savePdf';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, Download, Printer, Shield, Activity, Sparkles, CheckCircle2, 
   FileText, Calendar, User, Phone, Mail, DollarSign, Clock, HelpCircle,
@@ -45,7 +45,18 @@ export default function PlanQuotationModal({
   projectionData = []
 }: PlanQuotationModalProps) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const [documentZoom, setDocumentZoom] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640 ? Math.max(0.32, (window.innerWidth - 28) / 800) : 1);
+  const [documentZoom, setDocumentZoom] = useState(1);
+  const documentAreaRef = useRef<HTMLDivElement>(null);
+  const [fitZoom, setFitZoom] = useState(1);
+  useEffect(() => {
+    const area = documentAreaRef.current;
+    if (!area) return;
+    const update = () => setFitZoom(Math.max(0.3, Math.min(1.4, (area.clientWidth - (window.innerWidth < 640 ? 24 : 48)) / 800)));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(area);
+    return () => observer.disconnect();
+  }, [embedded]);
   const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
   const pinchDistance = (touches: React.TouchList) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
   const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
@@ -231,17 +242,20 @@ export default function PlanQuotationModal({
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pdfWidth = 210;
       const pdfHeight = 297;
+      const pageMargin = 10;
+      const contentWidth = pdfWidth - pageMargin * 2;
+      const contentHeight = pdfHeight - pageMargin * 2;
 
       // Each preview part is one complete A4 PDF page: Part 1 on page 1,
       // and the entire Part 2 on page 2. Never split one part across pages.
       const appendPage = (canvas: HTMLCanvasElement, first: boolean) => {
         if (!canvas.width || !canvas.height) throw new Error('Empty quotation capture');
         if (!first) pdf.addPage();
-        const scale = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+        const scale = Math.min(contentWidth / canvas.width, contentHeight / canvas.height);
         const renderedWidth = canvas.width * scale;
         const renderedHeight = canvas.height * scale;
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.88), 'JPEG',
-          (pdfWidth - renderedWidth) / 2, 0, renderedWidth, renderedHeight,
+          (pdfWidth - renderedWidth) / 2, (pdfHeight - renderedHeight) / 2, renderedWidth, renderedHeight,
           undefined, 'FAST');
       };
 
@@ -278,7 +292,7 @@ export default function PlanQuotationModal({
 
   return (
     <div className={embedded ? "w-full flex justify-center print:block" : "fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 print:p-0 print:bg-white print:fixed print:inset-0"}>
-      <div className={embedded ? "w-full min-w-0 flex flex-col bg-slate-100 print:bg-white" : "bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 print:max-h-none print:shadow-none print:border-none print:rounded-none print:w-full"}>
+      <div className={embedded ? "w-full min-w-0 flex flex-col bg-slate-100 print:bg-white" : "bg-white rounded-2xl md:rounded-3xl shadow-2xl max-w-7xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-slate-200 print:max-h-none print:shadow-none print:border-none print:rounded-none print:w-full"}>
         
         {/* Modal Action Header (Hidden when printing) */}
         <div className={cn("bg-slate-900 text-white p-3 md:px-8 flex items-center justify-end border-b border-slate-800 print:hidden flex-shrink-0", embedded && "bg-white border-[#e5e8df]")}>
@@ -321,14 +335,14 @@ export default function PlanQuotationModal({
         </div>
 
         {/* Document Scroll Area */}
-        <div className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onTouchCancel={handleTouchEnd} style={{ zoom: documentZoom, touchAction: "pan-x pan-y" }}>
+        <div ref={documentAreaRef} className={cn("overflow-auto p-3 sm:p-6 space-y-8 bg-slate-100 print:p-0 print:overflow-visible text-slate-800 font-sans", embedded && "w-full")} id={embedded ? "quotation-document-inline" : "quotation-document"} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} onTouchCancel={handleTouchEnd} style={{ touchAction: "pan-x pan-y" }}>
           
           {/* Printable Official Document - PAGE 1 */}
           <div 
             ref={page1Ref}
             data-quotation-content="true"
             data-page="1"
-            className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}
+            className="bg-white space-y-6 print:border-none print:shadow-none" style={{ zoom: fitZoom * documentZoom, width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}
           >
             
             {/* Header / Letterhead */}
@@ -1332,7 +1346,7 @@ export default function PlanQuotationModal({
               ref={page2Ref}
               data-quotation-content="true"
               data-page="2"
-              className="bg-white space-y-6 print:border-none print:shadow-none" style={{ width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}
+              className="bg-white space-y-6 print:border-none print:shadow-none" style={{ zoom: fitZoom * documentZoom, width: 800, minWidth: 800, minHeight: 1131, boxSizing: 'border-box', padding: '24px 28px', margin: '0 auto', borderRadius: 0, border: 'none', boxShadow: '0 8px 28px rgba(15, 23, 42, 0.10)' }}
             >
               {/* Page 2 Header Banner */}
               <div className="flex justify-between items-center border-b border-slate-200 pb-3">
