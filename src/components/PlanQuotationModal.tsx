@@ -261,6 +261,7 @@ export default function PlanQuotationModal({
       await savePdf(pdf, `${sanitizedProductName}_Sample_Quotation_${dateStr}_${timeStr}.pdf`);
     } catch (error) {
       console.error('Error generating PDF:', error);
+      alert('Unable to save PDF. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
     }
