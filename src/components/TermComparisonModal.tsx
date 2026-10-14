@@ -301,6 +301,7 @@ export default function TermComparisonModal({
       await savePdf(pdf, `ShantaLife_Term_Comparison_${cleanName}_${planTitle}.pdf`);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
+      alert('Unable to save PDF. Please try again.');
     } finally {
       setIsGeneratingPdf(false);
     }
