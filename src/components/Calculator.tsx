@@ -3120,7 +3120,6 @@ export default function Calculator() {
       <header className="sdpp-topbar relative z-30 print:hidden">
         <div className="sdpp-topbar-inner relative">
           <img src="/shanta-life-logo.png" alt="Shanta Life" className="h-10 w-auto max-w-28 object-contain flex-shrink-0" />
-          <div className="min-w-0 flex-1"><strong>Premium Pulse</strong><span>Policy & premium valuation dashboard</span></div>
           <button type="button" aria-label="Open calculator menu" aria-expanded={calculatorMenuOpen} onClick={() => setCalculatorMenuOpen(v => !v)} className="ml-auto flex-shrink-0 rounded-lg border border-[#d9dece] bg-white/80 p-2 text-brand-text hover:bg-[#f2f3e9]"><Menu className="h-6 w-6" /></button>
           {calculatorMenuOpen && <div className="absolute right-0 top-full mt-2 w-60 overflow-hidden rounded-xl border border-[#dfe3d5] bg-white p-1.5 shadow-xl z-50" role="menu">
             {([
