@@ -5,7 +5,6 @@ on:
     branches: [main]
 permissions:
   contents: read
-  pull-requests: write
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -20,24 +19,7 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npx playwright install --with-deps chromium
-      - run: |
-          set -o pipefail
-          rm -rf test-results
-          npm run test:e2e 2>&1 | tee /tmp/e2e-console.log
-      - name: Publish e2e failure details as a PR comment
-        if: failure()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          {
-            echo "### Playwright failure context"
-            echo '```md'
-            find test-results -name 'error-context.md' -exec sh -c 'echo "--- $1"; head -c 4000 "$1"' _ {} \; | head -c 14000
-            echo "--- console ---"
-            grep -n -A12 -E "Error:|DataCloneError|✘" /tmp/e2e-console.log | head -c 9000
-            echo '```'
-          } > /tmp/e2e-failures.md
-          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/e2e-failures.md
+      - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
