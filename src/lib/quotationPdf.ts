@@ -1,15 +1,23 @@
 import jsPDF from 'jspdf';
 import { autoTable, type UserOptions } from 'jspdf-autotable';
-import { buildQuotationModel, quoteMoney, type QuotationOptions, type QuoteTable } from './quotationModel';
+import { buildQuotationModel, quoteMoney, type CiConditionEntry, type CiRiderSchedule, type QuotationOptions, type QuoteTable } from './quotationModel';
 
 const INK = '#193b37';
 const MUTED = '#64736f';
 const ACCENT = '#708c46';
 const PAPER = '#f3f6ef';
+const ZEBRA = '#fafbf8';
 const LINE = '#dce4da';
 const LEFT = 16;
 const WIDTH = 178;
 const BOTTOM = 272;
+// Rider condition appendix geometry. Widths are measured against the longest
+// existing condition name, so every entry keeps one line and the full list of a
+// rider stays on a single A4 page.
+const CI_INDEX_X = LEFT + 1.5;
+const CI_ENGLISH = { x: LEFT + 7, width: 92, size: 8 };
+const CI_BENGALI = { x: LEFT + 104, width: 72, size: 7.4, scale: 3, lineHeight: 1.5 };
+const CI_ROW_PAD = 0.7;
 
 /** Purpose-built A4 report: real text and row-aware pagination, never a screenshot of the UI. */
 export async function createQuotationPdf(options: QuotationOptions, generatedAt = new Date()): Promise<jsPDF> {
@@ -65,7 +73,7 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
       theme: 'plain', showHead: 'everyPage', rowPageBreak: 'avoid',
       styles: { font: 'helvetica', fontSize: 8.2, cellPadding: 1.8, textColor: INK, lineColor: LINE, lineWidth: { bottom: 0.15 }, overflow: 'linebreak' },
       headStyles: { fillColor: PAPER, textColor: INK, fontStyle: 'bold', fontSize: 7.6 },
-      alternateRowStyles: { fillColor: '#fafbf8' },
+      alternateRowStyles: { fillColor: ZEBRA },
       columnStyles: Object.fromEntries(block.columns.map((_, index) => [index, { halign: index === 0 ? 'left' : 'right' }])),
       willDrawPage: () => { if (pdf.getCurrentPageInfo().pageNumber > 1) header(); },
     };
@@ -74,10 +82,12 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
     if (block.note) paragraph(block.note, 7.8);
   }
 
-  // Helvetica remains selectable for all report content. Bengali personal details
-  // use browser shaping with a bundled OFL font (no remote font service required).
+  // Helvetica remains selectable for all report content. Bengali text - customer
+  // details and rider condition names - uses browser shaping with a bundled OFL
+  // font (no remote font service required).
   const personalDetails = [model.input.name || 'Valued customer', model.input.phone, model.input.email].filter(Boolean) as string[];
-  if (personalDetails.some(value => /[^\x20-\x7e]/.test(value))) {
+  const needsShapedText = personalDetails.some(value => /[^\x20-\x7e]/.test(value)) || Boolean(model.ciSchedule);
+  if (needsShapedText) {
     // Fetch bytes through the same-origin app cache. Font URL requests can carry
     // different Origin/Vary headers and miss a precached response when offline.
     const fontResponse = await fetch('/fonts/NotoSansBengali.ttf');
@@ -86,42 +96,110 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
     await font.load();
     document.fonts.add(font);
   }
-  function personalText(value: string, size: number, bold = false) {
-    if (!/[^\x20-\x7e]/.test(value)) { paragraph(value, size, INK, bold); return; }
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('Unable to render the customer details.');
-    const scale = 4;
-    const pixelSize = size * 96 / 72;
-    const maxWidth = WIDTH * 96 / 25.4;
-    const fontSpec = `${bold ? 700 : 400} ${pixelSize}px QuotationBengali, sans-serif`;
-    context.font = fontSpec;
+  const shapedFont = (size: number, bold: boolean) => `${bold ? 700 : 400} ${size * 96 / 72}px QuotationBengali, sans-serif`;
+  const shapedHeight = (size: number, lineHeight: number) => size * 96 / 72 * lineHeight * 25.4 / 96;
+  let shapedMeasurer: CanvasRenderingContext2D | null = null;
+  /** Grapheme-safe wrapping: Bengali conjuncts and user-entered characters are never split. */
+  function shapedLines(value: string, widthMm: number, size: number, bold = false): string[] {
+    if (!shapedMeasurer) shapedMeasurer = document.createElement('canvas').getContext('2d');
+    if (!shapedMeasurer) throw new Error('Unable to measure the Bengali text in this quotation.');
+    shapedMeasurer.font = shapedFont(size, bold);
+    const maxWidth = widthMm * 96 / 25.4;
     const lines: string[] = [];
     let line = '';
-    // Segment by grapheme so Bengali conjuncts and other user-entered characters stay intact.
     const segments = typeof Intl.Segmenter === 'function'
       ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(value), part => part.segment)
       : Array.from(value);
     for (const segment of segments) {
-      if (line && context.measureText(line + segment).width > maxWidth) { lines.push(line); line = ''; }
+      if (line && shapedMeasurer.measureText(line + segment).width > maxWidth) { lines.push(line); line = ''; }
       line += segment;
     }
     if (line) lines.push(line);
-    for (const line of lines) {
-      const height = pixelSize * 1.7;
-      canvas.width = Math.ceil(maxWidth * scale);
-      canvas.height = Math.ceil(height * scale);
-      context.scale(scale, scale);
-      context.font = fontSpec;
-      context.fillStyle = INK;
-      context.textBaseline = 'middle';
-      context.fillText(line, 0, height / 2);
-      const mmHeight = height * 25.4 / 96;
+    return lines;
+  }
+  /** Rasterize one browser-shaped line at a fixed position; returns its height in mm. */
+  function shapedLine(line: string, x: number, widthMm: number, size: number, top: number, bold = false, scale = 4, lineHeight = 1.7): number {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Unable to render the Bengali text in this quotation.');
+    const pixelHeight = size * 96 / 72 * lineHeight;
+    canvas.width = Math.ceil(widthMm * 96 / 25.4 * scale);
+    canvas.height = Math.ceil(pixelHeight * scale);
+    context.scale(scale, scale);
+    context.font = shapedFont(size, bold);
+    context.fillStyle = INK;
+    context.textBaseline = 'middle';
+    context.fillText(line, 0, pixelHeight / 2);
+    const mmHeight = pixelHeight * 25.4 / 96;
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, top, widthMm, mmHeight);
+    return mmHeight;
+  }
+  function personalText(value: string, size: number, bold = false) {
+    if (!/[^\x20-\x7e]/.test(value)) { paragraph(value, size, INK, bold); return; }
+    for (const line of shapedLines(value, WIDTH, size, bold)) {
+      const mmHeight = shapedHeight(size, 1.7);
       room(mmHeight);
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', LEFT, y - size * 0.35, WIDTH, mmHeight);
+      shapedLine(line, LEFT, WIDTH, size, y - size * 0.35, bold);
       y += mmHeight;
     }
     y += 2;
+  }
+  /** One condition per row: selectable Latin name plus the shaped Bengali name. */
+  function ciRow(entry: CiConditionEntry, zebra: boolean) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(CI_ENGLISH.size);
+    const englishLines = pdf.splitTextToSize(entry.english, CI_ENGLISH.width) as string[];
+    const bengaliLines = shapedLines(entry.bengali, CI_BENGALI.width, CI_BENGALI.size);
+    const englishHeight = englishLines.length * CI_ENGLISH.size * 0.43;
+    const bengaliHeight = bengaliLines.length * shapedHeight(CI_BENGALI.size, CI_BENGALI.lineHeight);
+    const rowHeight = Math.max(englishHeight, bengaliHeight) + CI_ROW_PAD * 2;
+    room(rowHeight);
+    if (zebra) { pdf.setFillColor(ZEBRA); pdf.rect(LEFT, y, WIDTH, rowHeight, 'F'); }
+    const englishTop = y + (rowHeight - englishHeight) / 2 + CI_ENGLISH.size * 0.36;
+    text(String(entry.index), CI_INDEX_X, englishTop, 7.4, MUTED);
+    englishLines.forEach((line, index) => text(line, CI_ENGLISH.x, englishTop + index * CI_ENGLISH.size * 0.43, CI_ENGLISH.size, INK));
+    const bengaliTop = y + (rowHeight - bengaliHeight) / 2;
+    bengaliLines.forEach((line, index) => shapedLine(
+      line, CI_BENGALI.x, CI_BENGALI.width, CI_BENGALI.size,
+      bengaliTop + index * shapedHeight(CI_BENGALI.size, CI_BENGALI.lineHeight),
+      false, CI_BENGALI.scale, CI_BENGALI.lineHeight,
+    ));
+    pdf.setDrawColor(LINE);
+    pdf.line(LEFT, y + rowHeight, LEFT + WIDTH, y + rowHeight);
+    y += rowHeight;
+  }
+  function ciColumnHeadings() {
+    room(6);
+    pdf.setFillColor(PAPER);
+    pdf.rect(LEFT, y, WIDTH, 5, 'F');
+    text('#', CI_INDEX_X, y + 3.4, 7, INK, true);
+    text('COVERED CONDITION', CI_ENGLISH.x, y + 3.4, 7, INK, true);
+    text('BENGALI NAME', CI_BENGALI.x, y + 3.4, 7, INK, true);
+    y += 5.2;
+  }
+  /** Final appendix page: only the disease list of the rider the customer selected. */
+  function ciAppendixPage(schedule: CiRiderSchedule) {
+    activePolicy = 'CRITICAL ILLNESS RIDER  /  COVERED CONDITIONS';
+    newPage();
+    paragraph(schedule.riderName, 18, INK, true);
+    paragraph(schedule.intro, 8.5);
+    room(24);
+    pdf.setFillColor(PAPER);
+    pdf.roundedRect(LEFT, y, WIDTH, 17, 2, 2, 'F');
+    text('RIDER COVERAGE', LEFT + 5, y + 6, 7, MUTED, true);
+    text(schedule.coverage === undefined ? 'Not applicable' : quoteMoney(schedule.coverage), LEFT + 5, y + 13, 12.5, INK, true);
+    text('CONDITIONS LISTED', 112, y + 6, 7, MUTED, true);
+    text(String(schedule.groups.reduce((total, group) => total + group.entries.length, 0)), 112, y + 13, 12.5, INK, true);
+    y += 20;
+    if (schedule.coverageNote) paragraph(schedule.coverageNote, 8);
+    schedule.groups.forEach(group => {
+      heading(group.heading);
+      paragraph(group.benefit, 8);
+      ciColumnHeadings();
+      group.entries.forEach((entry, index) => ciRow(entry, index % 2 === 1));
+    });
+    y += 3;
+    paragraph(schedule.note, 7.8);
   }
 
   model.policies.forEach((policy, index) => {
@@ -155,6 +233,8 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
   });
   heading('Important information & next steps');
   model.notes.forEach((note, index) => paragraph(`${index + 1}. ${note}`, 8));
+  // The rider condition list is an appendix: its own page, at the very end, only when selected.
+  if (model.ciSchedule) ciAppendixPage(model.ciSchedule);
   const pages = pdf.getNumberOfPages();
   for (let page = 1; page <= pages; page++) {
     pdf.setPage(page);
