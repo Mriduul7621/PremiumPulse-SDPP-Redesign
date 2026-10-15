@@ -81,3 +81,27 @@ test('filenames include plan and precise time, use safe characters', () => {
   assert.match(filename, /Combo_Quotation_20261015T132412\.pdf$/);
   assert.doesNotMatch(filename, /[\\/:*?"<>|]/);
 });
+
+
+for (const type of ['classic', 'standard', 'none'] as const) {
+  test(`CI ${type}: appendix matches the selected and priced rider only`, async () => {
+    const { ciQuotationFixture } = await import('./fixtures');
+    const options = ciQuotationFixture(type);
+    const policy = buildQuotationModel(options).policies[0];
+    if (type === 'none') assert.equal(policy.criticalIllness, undefined);
+    else {
+      assert.equal(policy.criticalIllness?.type, type);
+      assert.equal(policy.criticalIllness?.coverage, 720000);
+    }
+  });
+}
+
+test('no Classic/Standard appendix is invented for built-in SDPP CI or ineligible CI', async () => {
+  assert.equal(buildQuotationModel(quotationFixture()).policies[0].criticalIllness, undefined);
+  const { ciQuotationFixture } = await import('./fixtures');
+  const options = ciQuotationFixture('classic');
+  options.input.sumAssured = 100000;
+  assert.equal(buildQuotationModel(options).policies[0].criticalIllness, undefined);
+  options.input.hasCIStandard = true;
+  assert.throws(() => buildQuotationModel(options), /only one Critical Illness rider/);
+});

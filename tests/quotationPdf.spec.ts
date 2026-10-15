@@ -293,3 +293,43 @@ test('the in-app disease dialog reads the same shared lists as the report', asyn
   await page.getByRole('button', { name: 'Close disease list' }).click();
   await expect(dialog).toHaveCount(0);
 });
+
+for (const type of ['classic', 'standard', 'none'] as const) {
+  test(`CI ${type}: a dedicated disease page contains only the selected rider list`, async ({ page }, testInfo) => {
+    await page.goto('/');
+    const bytes = await page.evaluate(async type => {
+      const renderer = '/src/lib/quotationPdf.ts', fixtures = '/tests/fixtures.ts';
+      const { createQuotationPdf } = await import(renderer);
+      const { ciQuotationFixture } = await import(fixtures);
+      const pdf = await createQuotationPdf(ciQuotationFixture(type));
+      return Array.from(new Uint8Array(pdf.output('arraybuffer')));
+    }, type);
+    const pdf = new Uint8Array(bytes);
+    await writeFile(testInfo.outputPath(`ci-${type}.pdf`), pdf);
+    const pages = await inspectPdf(pdf);
+    const appendix = pages.filter(content => content.includes('Covered disease list'));
+    if (type === 'none') {
+      expect(appendix).toHaveLength(0);
+      expect(pages.join(' ')).not.toContain('Covered disease / condition');
+      return;
+    }
+    expect(appendix).toHaveLength(1);
+    expect(appendix[0]).toContain(`Critical Illness ${type === 'classic' ? 'Classic' : 'Standard'}`);
+    expect(appendix[0]).toContain('CI coverage: BDT 720,000');
+    expect(appendix[0]).not.toContain('Premium breakdown');
+    expect(appendix[0]).not.toContain('Important information & next steps');
+    const { CLASSIC_CI_DISEASES, MINOR_CI_DISEASES, MAJOR_CI_DISEASES } = await import('../src/data/criticalIllness');
+    const diseases = type === 'classic' ? CLASSIC_CI_DISEASES : [...MINOR_CI_DISEASES, ...MAJOR_CI_DISEASES];
+    for (const disease of diseases) expect(appendix[0]).toContain(disease.split(' (')[0]);
+    if (type === 'classic') {
+      expect(appendix[0]).not.toContain('Minor critical illness');
+      expect(appendix[0]).not.toContain('Cerebral Shunt Insertion');
+    } else {
+      expect(appendix[0]).toContain('Minor critical illness | 10 conditions');
+      expect(appendix[0]).toContain('Major critical illness | 15 conditions');
+      expect(appendix[0]).toContain('BDT 216,000');
+      expect(appendix[0]).toContain('BDT 504,000');
+      expect(appendix[0]).not.toContain('Coma');
+    }
+  });
+}

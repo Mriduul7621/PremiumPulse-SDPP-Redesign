@@ -37,9 +37,9 @@ test('CI Standard: one appendix with separate minor and major sections and the b
     [...MINOR_CI_DISEASES, ...MAJOR_CI_DISEASES].map(disease => disease.english));
 });
 
-test('the selected rider wins: classic selection never mixes in standard sections', () => {
+test('classic selection lists only the classic conditions', () => {
   const options = quotationFixture('endowment');
-  const schedule = buildQuotationModel({ ...options, input: { ...options.input, hasCIClassic: true, hasCIStandard: true } }).ciSchedule!;
+  const schedule = buildQuotationModel({ ...options, input: { ...options.input, hasCIClassic: true } }).ciSchedule!;
   assert.equal(schedule.rider, 'classic');
   assert.equal(schedule.groups.length, 1);
 });

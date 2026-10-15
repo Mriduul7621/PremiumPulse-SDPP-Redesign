@@ -26,3 +26,11 @@ export function comboFixture(): QuotationOptions {
   const comboInput = { ...primary.input, sdppPlan: 'Prime' as SDPPPlan, targetPremium: 30000, paymentMethod: 'Quarterly' as PlanFrequency, customInterestRate: 10 };
   return { ...primary, isComboEnabled: true, comboSdppPlan: 'Prime', comboSdppPaymentMethod: 'Quarterly', comboSdppDeposit: 30000, comboSdppCustomRate: 10, sdppComboData: runSDPPCalculations(comboInput) };
 }
+
+export function ciQuotationFixture(type: 'classic' | 'standard' | 'none' = 'none'): QuotationOptions {
+  const options = quotationFixture('endowment');
+  options.input.hasCIClassic = type === 'classic';
+  options.input.hasCIStandard = type === 'standard';
+  options.selectedProduct = calculatePremiums(options.input).find(result => result.productId === 'endowment')!;
+  return options;
+}
