@@ -183,6 +183,8 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
     newPage();
     paragraph(schedule.riderName, 18, INK, true);
     paragraph(schedule.intro, 8.5);
+    const classic = schedule.rider === 'classic';
+    paragraph(`Covered disease list | ${classic ? '19 conditions' : '10 minor + 15 major conditions'}`, 9, MUTED, true);
     room(24);
     pdf.setFillColor(PAPER);
     pdf.roundedRect(LEFT, y, WIDTH, 17, 2, 2, 'F');
@@ -192,9 +194,11 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
     text(String(schedule.groups.reduce((total, group) => total + group.entries.length, 0)), 112, y + 13, 12.5, INK, true);
     y += 20;
     if (schedule.coverageNote) paragraph(schedule.coverageNote, 8);
-    schedule.groups.forEach(group => {
-      heading(group.heading);
-      paragraph(group.benefit, 8);
+    schedule.groups.forEach((group, groupIndex) => {
+      const patchHeading = classic ? '' : (groupIndex === 0 ? 'Minor critical illness | 10 conditions' : 'Major critical illness | 15 conditions');
+      heading(patchHeading ? `${group.heading} | ${patchHeading}` : group.heading);
+      const coverageLine = `CI coverage: ${schedule.coverage === undefined ? 'Not applicable' : quoteMoney(schedule.coverage)}.`;
+      paragraph(classic ? group.benefit : `${coverageLine} ${group.benefit}`, 8);
       ciColumnHeadings();
       group.entries.forEach((entry, index) => ciRow(entry, index % 2 === 1));
     });

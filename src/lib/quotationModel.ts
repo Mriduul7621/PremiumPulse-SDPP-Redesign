@@ -24,6 +24,10 @@ export interface QuoteTable {
   rows: string[][];
   note?: string;
 }
+export interface QuoteCriticalIllness {
+  type: 'classic' | 'standard';
+  coverage: number;
+}
 export interface QuotePolicy {
   title: string;
   mode: PlanFrequency;
@@ -31,6 +35,7 @@ export interface QuotePolicy {
   totalPaid: number;
   summary: QuoteTable[];
   schedules: QuoteTable[];
+  criticalIllness?: QuoteCriticalIllness;
 }
 export interface CiConditionEntry {
   index: number;
@@ -171,6 +176,7 @@ export function buildQuotationModel(options: QuotationOptions): QuotationModel {
     if (!options.sdppData) throw new Error('SDPP calculation is missing. Please recalculate.');
     policies.push(sdppPolicy(input, options.sdppData, input.sdppPlan || 'Signature', input.paymentMethod));
   } else {
+    if (input.hasCIClassic && input.hasCIStandard) throw new Error('Please select only one Critical Illness rider and recalculate.');
     const mode = input.paymentMethod;
     const count = mode === 'Single' ? 1 : paymentsPerYear(mode) * input.term;
     const premiumRows = [['Basic policy', quoteMoney(product.basePremium[mode])]];
@@ -208,7 +214,12 @@ export function buildQuotationModel(options: QuotationOptions): QuotationModel {
       pairTable('Survival / maturity benefits', maturity, 'Subject to survival, policy status and official policy terms. Staged payouts are not additional to the full sum assured.'),
     ];
     if (mode !== 'Single') schedules.push({ title: 'Other payment frequencies', columns: ['Payment mode', 'Total premium per payment'], rows: (['Monthly', 'Quarterly', 'Half-yearly', 'Yearly'] as const).map(frequency => [frequency === mode ? `${frequency} (selected)` : frequency, quoteMoney(product.totalPremium[frequency])]), note: 'Each mode has its own pricing; annual payment is not necessarily the selected modal premium multiplied by payments per year.' });
-    policies.push({ title: product.productName, mode, premium: product.totalPremium[mode], totalPaid: product.totalPremium[mode] * count, summary, schedules });
+    const ciType = input.hasCIClassic ? 'classic' : input.hasCIStandard ? 'standard' : undefined;
+    const ciPremium = ciType === 'classic' ? product.ciClassicPremium?.[mode] : ciType === 'standard' ? product.ciStandardPremium?.[mode] : 0;
+    const criticalIllness: QuoteCriticalIllness | undefined = ciType && input.sumAssured >= 200000 && (ciPremium ?? 0) > 0
+      ? { type: ciType, coverage: input.ciCoverage || Math.min(input.sumAssured * 0.5, 3000000) }
+      : undefined;
+    policies.push({ criticalIllness, title: product.productName, mode, premium: product.totalPremium[mode], totalPaid: product.totalPremium[mode] * count, summary, schedules });
   }
   if (options.isComboEnabled && !isSDPP) {
     if (!options.sdppComboData) throw new Error('The combination calculation is missing. Please recalculate.');
