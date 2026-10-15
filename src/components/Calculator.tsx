@@ -1251,7 +1251,7 @@ export default function Calculator() {
                             step="0.1"
                             value={input.customInterestRate || ''}
                             onChange={(e) => handleInputChange('customInterestRate', e.target.value === '' ? undefined : Number(e.target.value))}
-                            placeholder="Optional (Default 7% - 9% Range)"
+                            placeholder="Optional (Default 6.5% - 8.5% Range)"
                             className="w-full bg-white border border-slate-200 rounded-full px-4 py-2 text-xs font-mono font-black text-slate-900 outline-none focus:border-brand-primary"
                           />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">%</span>
@@ -1603,7 +1603,7 @@ export default function Calculator() {
                     <div className="space-y-1 pt-0.5">
                       <div className="flex justify-between items-center px-1">
                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Custom Return Rate</label>
-                        <span className="text-[9px] text-slate-400 font-bold">Default Range: 7% - 9%</span>
+                        <span className="text-[9px] text-slate-400 font-bold">Default Range: 6.5% - 8.5%</span>
                       </div>
                       <div className="relative">
                         <input
@@ -1612,7 +1612,7 @@ export default function Calculator() {
                           disabled={!isComboStep2Complete}
                           value={comboSdppCustomRate}
                           onChange={(e) => setComboSdppCustomRate(e.target.value === '' ? '' : Math.max(0, Number(e.target.value)))}
-                          placeholder="e.g. 8.5 (Default 7%-9%)"
+                          placeholder="e.g. 8.5 (Default 6.5%-8.5%)"
                           className="w-full bg-white border border-slate-200 rounded-full px-4 py-2 text-xs font-mono font-bold text-slate-800 outline-none focus:border-brand-primary"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400 uppercase">%</span>
@@ -1902,7 +1902,7 @@ export default function Calculator() {
                   <strong className="font-mono text-slate-800 whitespace-nowrap">{formatCurrency(sdppPaid)}</strong>
                 </div>
                 <div className="flex justify-between items-center gap-2">
-                  <span className="text-slate-600 font-medium">Maturity ({isCustomRate ? `${customRateVal}%` : '7% - 9%'}):</span>
+                  <span className="text-slate-600 font-medium">Maturity ({isCustomRate ? `${customRateVal}%` : '6.5% - 8.5%'}):</span>
                   <strong className="font-mono text-brand-primary text-right whitespace-nowrap">{sdppMaturityText}</strong>
                 </div>
               </div>
@@ -2043,11 +2043,11 @@ export default function Calculator() {
                <span className="text-lg font-black text-brand-text">BDT {sdppData.totalPremiumPaid.toLocaleString()}</span>
              </div>
              <div className="bg-brand-primary flex justify-between items-center p-5 rounded-2xl text-white shadow-xl shadow-brand-primary/20">
-               <span className="text-sm font-black italic">Estimated Maturity (7%)</span>
+               <span className="text-sm font-black italic">Estimated Maturity (6.5%)</span>
                <span className="text-lg font-black italic">BDT {sdppData.maturity7.toLocaleString()}</span>
              </div>
              <div className="bg-blue-900 flex justify-between items-center p-5 rounded-2xl text-white shadow-xl shadow-blue-900/20">
-               <span className="text-sm font-black italic">Estimated Maturity (9%)</span>
+               <span className="text-sm font-black italic">Estimated Maturity (8.5%)</span>
                <span className="text-lg font-black italic">BDT {sdppData.maturity9.toLocaleString()}</span>
              </div>
           </div>
@@ -2223,7 +2223,7 @@ export default function Calculator() {
         }>;
       }> = [
         { 
-          label: `ACCUMULATED MATURITY BENEFIT ${isCustomRate ? `(${customRateVal}%)` : '(7% - 9%)'}`, 
+          label: `ACCUMULATED MATURITY BENEFIT ${isCustomRate ? `(${customRateVal}%)` : '(6.5% - 8.5%)'}`,
           displayValue: combinedMaturityValText,
           numericValue: 1, // Always show maturity
           subtitle: `Policy 1 (${formatCurrency(primaryMaturity)}) + SDPP (${sdppMaturityValText})`,
@@ -2632,7 +2632,7 @@ export default function Calculator() {
               <p className="text-xs text-slate-500 font-bold">
                 {input.customInterestRate && Number(input.customInterestRate) > 0
                   ? `Projected maturity return at ${input.term} years (${input.customInterestRate}% Custom Rate)`
-                  : `Projected maturity return at ${input.term} years (7% to 9% Return)`}
+                  : `Projected maturity return at ${input.term} years (6.5% to 8.5% Return)`}
               </p>
             </div>
             <div className="text-center md:text-right">
@@ -3200,6 +3200,7 @@ export default function Calculator() {
                         comboSdppPlan={comboSdppPlan}
                         comboSdppPaymentMethod={comboSdppPaymentMethod}
                         comboSdppDeposit={comboSdppDeposit}
+                        comboSdppCustomRate={comboSdppCustomRate === '' ? undefined : Number(comboSdppCustomRate)}
                         projectionData={projectionData}
                       />
                     </>) : previewSection === 'term' ? <div className="space-y-4"><div className="rounded-2xl border border-[#e5e8df] bg-white p-5 space-y-3"><h3 className="font-bold">Term Comparison</h3><div className="flex items-center gap-2"><button onClick={()=>setShowTermComparisonModal(v=>!v)} className="flex-1 rounded-xl bg-brand-primary py-3 font-semibold text-white">{showTermComparisonModal?'Hide Details':'View Details →'}</button><button type="button" title="Print term comparison" aria-label="Print term comparison" disabled={!showTermComparisonModal} onClick={()=>printSection('term-export')} className="rounded-xl border p-3 disabled:opacity-40"><Printer className="w-5 h-5"/></button><button type="button" title="Download term comparison PDF" aria-label="Download term comparison PDF" disabled={!showTermComparisonModal || isExportingSection} onClick={()=>downloadSection('term-export','term-comparison.pdf')} className="rounded-xl border p-3 disabled:opacity-40"><Download className="w-5 h-5"/></button></div></div>{showTermComparisonModal && <div id="term-export"><TermComparisonModal embedded isOpen={true} onClose={()=>setShowTermComparisonModal(false)} input={input} selectedProduct={selectedProduct} sdppData={sdppData} isComboEnabled={isComboEnabled} comboSdppPlan={comboSdppPlan} comboSdppDeposit={comboSdppDeposit} comboSdppPaymentMethod={comboSdppPaymentMethod} currentRules={currentRules} onSelectTerm={(newTerm)=>handleInputChange('term',newTerm)}/></div>}</div> : previewSection === 'policy' ? <div className="space-y-4"><div className="rounded-2xl border border-[#e5e8df] bg-white p-5 space-y-3"><h3 className="font-bold">Policy Comparison</h3><div className="flex items-center gap-2"><button onClick={()=>setIsCompareMode(v=>!v)} className="flex-1 rounded-xl bg-brand-primary py-3 font-semibold text-white">{isCompareMode?'Hide Details':'View Details →'}</button><button type="button" title="Print policy" aria-label="Print policy" disabled={!isCompareMode} onClick={()=>printSection('policy-export')} className="rounded-xl border p-3 disabled:opacity-40"><Printer className="w-5 h-5"/></button><button type="button" title="Download policy PDF" aria-label="Download policy PDF" disabled={!isCompareMode || isExportingSection} onClick={()=>downloadSection('policy-export','policy-comparison.pdf')} className="rounded-xl border p-3 disabled:opacity-40"><Download className="w-5 h-5"/></button></div></div>{isCompareMode && <div id="policy-export">{renderCompareMode()}</div>}</div> : <div className="space-y-4"><div className="rounded-2xl border border-[#e5e8df] bg-white p-5 space-y-4"><h3 className="font-bold">Liquidity View</h3><p className="text-sm text-slate-600">Explore the year-wise policy projection and its available values.</p><div className="flex items-center gap-2"><button onClick={()=>setLiquidityDetails(v=>!v)} className="flex-1 rounded-xl bg-brand-primary py-3 font-semibold text-white">{liquidityDetails?'Hide Details':'View Details →'}</button><button type="button" title="Print liquidity" aria-label="Print liquidity" disabled={!liquidityDetails} onClick={()=>printSection('liquidity-export')} className="rounded-xl border p-3 disabled:opacity-40"><Printer className="w-5 h-5"/></button><button type="button" title="Download liquidity PDF" aria-label="Download liquidity PDF" disabled={!liquidityDetails || isExportingSection} onClick={()=>downloadSection('liquidity-export','liquidity-comparison.pdf')} className="rounded-xl border p-3 disabled:opacity-40"><Download className="w-5 h-5"/></button></div></div>{liquidityDetails && <div className="rounded-2xl bg-white border border-[#e5e8df] p-4 space-y-4"><div id="liquidity-export"><h3 className="font-bold text-brand-text">Policy Value Projection Trajectory</h3><div className="overflow-x-auto"><table className="w-full min-w-[650px] text-xs text-left"><thead><tr className="bg-[#f0f1df]">{['End of Year','Base Premium','Natural Death','Surrender Value','Paid Up Value','ETI Benefits'].map(label=><th key={label} className="p-2 border">{label}</th>)}</tr></thead><tbody>{projectionData.map(row=><tr key={row.year}><td className="p-2 border">{row.year}</td><td className="p-2 border">{row.premium>0?formatCurrency(row.premium):'—'}</td><td className="p-2 border">{formatCurrency(row.deathBenefit||input.sumAssured)}</td><td className="p-2 border">{row.surrenderValue>0?formatCurrency(row.surrenderValue):'—'}</td><td className="p-2 border">{row.paidUpValue>0?formatCurrency(row.paidUpValue):'—'}</td><td className="p-2 border">{row.etiDurationStr||'—'}</td></tr>)}</tbody></table></div></div></div>}</div>}

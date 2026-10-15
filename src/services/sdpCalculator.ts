@@ -1,5 +1,8 @@
 import { CalculationInput, SDPPResult } from '../data/types';
 
+// Single source of truth for illustration labels and calculation assumptions.
+export const SDPP_ILLUSTRATION_RATES = { lower: 6.5, higher: 8.5, projection: 8 } as const;
+
 // Rate Tables & Constants for SDPP
 export const PREMIUM_CHARGE_SCALE: Record<number, Record<number, number>> = {
   1: { 5: 0.20, 6: 0.25, 7: 0.25, 8: 0.25, 9: 0.25, 10: 0.30, 11: 0.35, 12: 0.35, 13: 0.35, 14: 0.35, 15: 0.40, 16: 0.40, 17: 0.40, 18: 0.40, 19: 0.40, 20: 0.45, 21: 0.45, 22: 0.45, 23: 0.45, 24: 0.45, 25: 0.45 },
@@ -322,8 +325,8 @@ export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
     return Math.max(0, accountValue - (accountValue * chargePercent) - processingFee);
   };
 
-  const maturity7Val = calculateAV(0.065, pTerm * 12);
-  const maturity9Val = calculateAV(0.085, pTerm * 12);
+  const maturity7Val = calculateAV(SDPP_ILLUSTRATION_RATES.lower / 100, pTerm * 12);
+  const maturity9Val = calculateAV(SDPP_ILLUSTRATION_RATES.higher / 100, pTerm * 12);
 
   const customRate = Number(inputs.customInterestRate);
   const customMaturity = (customRate && customRate > 0) ? calculateAV(customRate / 100, pTerm * 12) : undefined;
@@ -331,7 +334,7 @@ export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
 
   // Source SDPP projection: announced rate defaults to 8%, monthly balance and
   // daily-compounded allocated premium are calculated separately.
-  const announcedRate = 8;
+  const announcedRate = SDPP_ILLUSTRATION_RATES.projection;
   const qMonthlyRate = Math.pow(1 + announcedRate / 100, 1 / 12) - 1;
   const qDailyRateBase = Math.pow(1 + announcedRate / 100, 1 / 365);
   const modeMonths = premiumMode === 'Monthly' ? 1 : premiumMode === 'Quarterly' ? 3 : premiumMode === 'Half-yearly' ? 6 : 12;
@@ -371,8 +374,8 @@ export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
   const totalPremiumPaidAtSurrender = pMonth > 0 ? calculateTotalPaidAtMonth(pMonth) : 0;
   const totalPaidAtStop = pMonth > 0 ? calculateTotalPaidAtMonth(pMonth) : 0;
 
-  const avAtSurrender7 = pMonth > 0 ? calculateAV(0.065, pMonth) : 0;
-  const avAtSurrender9 = pMonth > 0 ? calculateAV(0.085, pMonth) : 0;
+  const avAtSurrender7 = pMonth > 0 ? calculateAV(SDPP_ILLUSTRATION_RATES.lower / 100, pMonth) : 0;
+  const avAtSurrender9 = pMonth > 0 ? calculateAV(SDPP_ILLUSTRATION_RATES.higher / 100, pMonth) : 0;
 
   const surrenderYear = Math.ceil(pMonth / 12);
   const chargeTable: Record<number, number> = { 1: 1.0, 2: 0.6, 3: 0.3, 4: 0.2, 5: 0.1 };
@@ -406,8 +409,8 @@ export const runSDPPCalculations = (inputs: CalculationInput): SDPPResult => {
     totalBasicPremiumPaidAtSurrender: pMonth > 0 ? mBasicPremium * pMonth : 0,
     totalRiderPremiumPaidAtSurrender: pMonth > 0 ? totalPremiumPaidAtSurrender - (mBasicPremium * pMonth) : 0,
     surrenderChargePercent: currentSurrenderChargePercent,
-    stopPaymentMaturity7: pMonth > 0 ? calculateAV(0.065, pTerm * 12, pMonth) : 0, 
-    stopPaymentMaturity9: pMonth > 0 ? calculateAV(0.085, pTerm * 12, pMonth) : 0,
+    stopPaymentMaturity7: pMonth > 0 ? calculateAV(SDPP_ILLUSTRATION_RATES.lower / 100, pTerm * 12, pMonth) : 0,
+    stopPaymentMaturity9: pMonth > 0 ? calculateAV(SDPP_ILLUSTRATION_RATES.higher / 100, pTerm * 12, pMonth) : 0,
     totalPaidAtStop,
   };
 };
