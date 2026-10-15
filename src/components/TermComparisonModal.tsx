@@ -429,7 +429,7 @@ export default function TermComparisonModal({
                         Sum Assured
                       </th>
                       <th className="py-1.5 px-2 border-r border-slate-800 text-right w-[13%]">
-                        {isSDPP ? 'Maturity (7%-9%)' : 'Maturity Value'}
+                        {isSDPP ? 'Maturity (6.5%-8.5%)' : 'Maturity Value'}
                       </th>
                       <th className="py-1.5 px-2 text-center print:hidden w-16 shrink-0">Action</th>
                     </tr>

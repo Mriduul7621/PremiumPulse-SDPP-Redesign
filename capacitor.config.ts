@@ -4,7 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.premiumpulse.calculator',
   appName: 'PremiumPulse',
   webDir: 'dist',
-  bundledWebRuntime: false,
   android: { allowMixedContent: false },
 };
 

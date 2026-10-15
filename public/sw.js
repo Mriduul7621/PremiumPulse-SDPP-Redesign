@@ -1,5 +1,5 @@
-const CACHE = 'premium-pulse-offline-v2';
-const APP_SHELL = ['/', '/index.html', '/shanta-life-logo.png', '/premium-pulse-app-icon.png', '/manifest.webmanifest'];
+const CACHE = 'premium-pulse-offline-v3';
+const APP_SHELL = ['/', '/index.html', '/shanta-life-logo.png', '/premium-pulse-app-icon.png', '/manifest.webmanifest', '/fonts/NotoSansBengali.ttf'];
 const EXTERNAL_ARTWORK = [
   'https://raw.githubusercontent.com/mriduultnd/PremiumPulse-SDPP-Redesign/main/Premium%20Pulse%20Laptop%20BG.jpg',
   'https://raw.githubusercontent.com/mriduultnd/PremiumPulse-SDPP-Redesign/main/Premium%20Pulse%20Mobile%20App%20BG.jpg'
@@ -51,7 +51,10 @@ self.addEventListener('fetch', event => {
     return;
   }
   event.respondWith((async () => {
-    const cached = await caches.match(request);
+    // Same-origin bundled assets are not personalized. Ignore development/static
+    // server Vary: Origin differences between precache and module/font requests.
+    const staticAsset = sameOrigin && (url.pathname.startsWith('/assets/') || APP_SHELL.includes(url.pathname));
+    const cached = await caches.match(request, { ignoreVary: staticAsset });
     if (cached) return cached;
     try {
       const response = await fetch(request);

@@ -7,9 +7,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../lib/utils';
 import { CalculationInput, CalculationResult, SDPPResult, ProjectionRow } from '../data/types';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import { sanitizeClonedDocForPdf } from '../lib/pdfColorSanitizer';
+import { createQuotationPdf, quotationFilename } from '../lib/quotationPdf';
 
 interface PlanQuotationModalProps {
   isOpen: boolean;
@@ -25,6 +23,7 @@ interface PlanQuotationModalProps {
   comboSdppPlan?: string;
   comboSdppPaymentMethod?: string;
   comboSdppDeposit?: number;
+  comboSdppCustomRate?: number;
   projectionData?: ProjectionRow[];
 }
 
@@ -42,9 +41,12 @@ export default function PlanQuotationModal({
   comboSdppPlan = 'Elite',
   comboSdppPaymentMethod = 'Monthly',
   comboSdppDeposit = 5000,
+  comboSdppCustomRate,
   projectionData = []
 }: PlanQuotationModalProps) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const exportInProgress = useRef(false);
   const [documentZoom, setDocumentZoom] = useState(1);
   const documentAreaRef = useRef<HTMLDivElement>(null);
   const [fitZoom, setFitZoom] = useState(1);
@@ -84,7 +86,7 @@ export default function PlanQuotationModal({
   const isS3PP = selectedProduct?.productId === 's3pp';
   const isS4PP = selectedProduct?.productId === 's4pp';
 
-  const isSDPP = selectedProduct?.productId === 'sdpp';
+  const isSDPP = selectedProduct?.productId === 'sdpp' || Boolean(selectedProduct?.productId.startsWith('sdpp_'));
   const isChildPlan = Boolean(selectedProduct?.productId?.startsWith('scep'));
   const childPercentageStr = isChildPlan ? (selectedProduct?.productId?.split('_').pop() || '1') : '0';
   const childPercentage = isChildPlan ? parseInt(childPercentageStr) / 100 : 0;
@@ -185,113 +187,23 @@ export default function PlanQuotationModal({
   const totalTaxRebate = primaryTaxRebate + sdppTaxRebate;
 
   const handleDownloadPdf = async () => {
-    if (!page1Ref.current) return;
+    if (exportInProgress.current) return;
+    exportInProgress.current = true;
     setIsGeneratingPdf(true);
-    let exportStage = 'Preparing quotation';
-
+    setPdfError(null);
     try {
-      if ('fonts' in document) {
-        await (document as any).fonts.ready;
-      }
-
-      // Capture the same 800px-wide illustration shown in preview. The preview's
-      // pinch-zoom/scroll wrapper must never affect the exported document.
-      const capturePage = async (element: HTMLElement, pageNum: string) => {
-        const pageHeight = Math.max(1131, element.scrollHeight);
-        return html2canvas(element, {
-          // Lower canvas memory usage on Android WebView to prevent silent export termination.
-          scale: 1.25,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          width: 800,
-          height: pageHeight,
-          windowWidth: 1100,
-          windowHeight: Math.max(1200, pageHeight),
-          scrollX: 0,
-          scrollY: 0,
-          onclone: (clonedDoc) => {
-            sanitizeClonedDocForPdf(clonedDoc);
-            const targetEl = clonedDoc.querySelector(`[data-page="${pageNum}"]`) as HTMLElement | null;
-            if (!targetEl) return;
-            // Neutralize the zoom applied to the preview wrapper on mobile.
-            let ancestor = targetEl.parentElement;
-            while (ancestor && ancestor !== clonedDoc.body) {
-              ancestor.style.zoom = '1';
-              ancestor.style.transform = 'none';
-              ancestor.style.overflow = 'visible';
-              ancestor.style.maxHeight = 'none';
-              ancestor = ancestor.parentElement;
-            }
-            targetEl.style.zoom = '1';
-            targetEl.style.transform = 'none';
-            targetEl.style.width = '800px';
-            targetEl.style.minWidth = '800px';
-            targetEl.style.maxWidth = '800px';
-            targetEl.style.height = 'auto';
-            targetEl.style.minHeight = '1131px';
-            targetEl.style.boxSizing = 'border-box';
-            targetEl.style.margin = '0';
-            targetEl.style.borderRadius = '0';
-            targetEl.style.boxShadow = 'none';
-            targetEl.style.backgroundColor = '#ffffff';
-          }
-        });
+      const options = {
+        input, selectedProduct, sdppData, isComboEnabled, sdppComboData,
+        comboSdppPlan, comboSdppPaymentMethod, comboSdppDeposit, comboSdppCustomRate, projectionData,
       };
-
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      const pageMargin = 10;
-      const contentWidth = pdfWidth - pageMargin * 2;
-      const contentHeight = pdfHeight - pageMargin * 2;
-
-      // Keep every quotation page at the same readable A4 width as the disclaimer.
-      // Never shrink an entire tall quotation to fit one sheet: continue on another A4 sheet.
-      let hasPdfPage = false;
-      const appendPage = (canvas: HTMLCanvasElement) => {
-        if (!canvas.width || !canvas.height) throw new Error('Empty quotation capture');
-        const pixelsPerSheet = Math.max(1, Math.floor(canvas.width * contentHeight / contentWidth));
-        for (let top = 0; top < canvas.height; top += pixelsPerSheet) {
-          if (hasPdfPage) pdf.addPage();
-          hasPdfPage = true;
-          const slice = document.createElement('canvas');
-          slice.width = canvas.width;
-          slice.height = Math.min(pixelsPerSheet, canvas.height - top);
-          const context = slice.getContext('2d');
-          if (!context) throw new Error('Unable to render quotation PDF page');
-          context.fillStyle = '#ffffff';
-          context.fillRect(0, 0, slice.width, slice.height);
-          context.drawImage(canvas, 0, top, slice.width, slice.height, 0, 0, slice.width, slice.height);
-          const renderedHeight = slice.height * contentWidth / slice.width;
-          pdf.addImage(slice.toDataURL('image/jpeg', 0.88), 'JPEG', pageMargin, pageMargin,
-            contentWidth, renderedHeight, undefined, 'FAST');
-        }
-      };
-
-      exportStage = 'Rendering quotation page 1';
-      appendPage(await capturePage(page1Ref.current, '1'));
-      if (!isComboEnabled && !isSDPP && page2Ref.current) {
-        exportStage = 'Rendering disclaimer';
-        appendPage(await capturePage(page2Ref.current, '2'));
-      }
-
       const now = new Date();
-      const pad = (n: number) => String(n).padStart(2, '0');
-      const dateStr = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
-      const timeStr = `${pad(now.getHours())}${pad(now.getMinutes())}`;
-
-      const rawProductName = isComboEnabled
-        ? `${selectedProduct?.productName || 'Plan'}_Combo`
-        : (selectedProduct?.productName || 'Plan');
-      const sanitizedProductName = rawProductName.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
-
-      exportStage = 'Opening Android save/share';
-      await savePdf(pdf, `${sanitizedProductName}_Sample_Quotation_${dateStr}_${timeStr}.pdf`);
+      const pdf = await createQuotationPdf(options, now);
+      await savePdf(pdf, quotationFilename(options, now));
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert(`Quotation PDF failed at: ${exportStage}. ${error instanceof Error ? error.message : String(error)}`);
+      console.error('Error generating quotation PDF:', error);
+      setPdfError(`Unable to save the quotation. ${error instanceof Error ? error.message : 'Please try again.'}`);
     } finally {
+      exportInProgress.current = false;
       setIsGeneratingPdf(false);
     }
   };
@@ -317,7 +229,7 @@ export default function PlanQuotationModal({
             </button>
 
             <button
-              title="Download PDF" aria-label="Download PDF"
+              title="Download PDF" aria-label={isGeneratingPdf ? "Generating quotation PDF" : "Download PDF"} aria-busy={isGeneratingPdf}
               onClick={handleDownloadPdf}
               disabled={isGeneratingPdf}
               className="px-4 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary/90 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-brand-primary/20 transition-all cursor-pointer disabled:opacity-50"
@@ -342,6 +254,13 @@ export default function PlanQuotationModal({
               <X className="w-5 h-5" />
             </button>
           </div>
+        </div>
+
+        <div className="print:hidden bg-white px-4 py-3 border-b border-slate-200">
+          <p className="text-xs text-slate-600" role="status" aria-live="polite">
+            {isGeneratingPdf ? 'Preparing your personalized A4 quotation…' : 'PDF download includes a clean, print-ready summary, benefit details and available policy projections.'}
+          </p>
+          {pdfError && <p role="alert" className="mt-2 text-sm text-red-700">{pdfError} You can retry using Download PDF.</p>}
         </div>
 
         {/* Document Scroll Area */}
@@ -369,7 +288,7 @@ export default function PlanQuotationModal({
                   UNOFFICIAL SAMPLE ILLUSTRATION
                 </span>
                 <p className="text-[11px] text-slate-500 font-medium pt-1">
-                  Date: {issueDateStr} {!isComboEnabled && '• Page 1 of 2'}
+                  Date: {issueDateStr} {!isComboEnabled && !isSDPP && '• Page 1 of 2'}
                 </p>
               </div>
             </div>

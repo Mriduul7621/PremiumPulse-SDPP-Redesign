@@ -7,7 +7,7 @@ import { Share } from '@capacitor/share';
 export async function savePdf(pdf: jsPDF, requestedName: string): Promise<void> {
   const filename = requestedName.replace(/[\\/:*?"<>|]/g, '_').replace(/[^\x20-\x7E]/g, '_');
   if (!Capacitor.isNativePlatform()) {
-    pdf.save(filename);
+    await pdf.save(filename, { returnPromise: true });
     return;
   }
   const base64 = pdf.output('datauristring').split(',')[1];
