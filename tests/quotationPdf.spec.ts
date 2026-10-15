@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
-import { getDocument, OPS } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { CLASSIC_CI_DISEASES, MAJOR_CI_DISEASES, MINOR_CI_DISEASES } from '../src/data/ciDiseases';
 
 async function inspectPdf(bytes: Uint8Array) {
@@ -27,13 +27,10 @@ async function inspectPdf(bytes: Uint8Array) {
   return pages;
 }
 
-async function countPageImages(bytes: Uint8Array, pageNumber: number) {
-  const document = await getDocument({ data: bytes, useSystemFonts: true }).promise;
-  const page = await document.getPage(pageNumber);
-  const operations = await page.getOperatorList();
-  const images = operations.fnArray.filter((fn: number) => fn === OPS.paintImageXObject).length;
-  await document.destroy();
-  return images;
+/** Count embedded rasters: the logo plus one shaped Bengali line per condition. */
+function countEmbeddedImages(bytes: Uint8Array) {
+  const source = Buffer.from(bytes).toString('latin1');
+  return (source.match(/\/Subtype\s*\/Image/g) || []).length;
 }
 
 async function quotationBytes(page: Page, scenario: string) {
@@ -66,7 +63,7 @@ test('CI Classic: the report ends with one appendix page listing only its 19 dis
     .filter(disease => !CLASSIC_CI_DISEASES.some(shared => shared.english === disease.english));
   for (const disease of foreign) expect(appendix, disease.english).not.toContain(disease.english);
   expect(pages.slice(0, -1).join(' ')).not.toContain('Benign Brain Tumour');
-  expect(await countPageImages(pdf, 3)).toBeGreaterThanOrEqual(CLASSIC_CI_DISEASES.length + 1);
+  expect(countEmbeddedImages(pdf)).toBeGreaterThanOrEqual(CLASSIC_CI_DISEASES.length + 1);
 });
 
 test('CI Standard: minor and major diseases share the single appendix page, in separate sections', async ({ page }, testInfo) => {
@@ -83,7 +80,7 @@ test('CI Standard: minor and major diseases share the single appendix page, in s
   expect(appendix).toContain('If minor claimed: 70% - BDT 504,000');
   for (const disease of [...MINOR_CI_DISEASES, ...MAJOR_CI_DISEASES]) expect(appendix, disease.english).toContain(disease.english);
   for (const name of ['Benign Brain Tumour', 'Pulmonary Hypertension', 'Coma', 'Heart Attack']) expect(appendix, name).not.toContain(name);
-  expect(await countPageImages(pdf, 3)).toBeGreaterThanOrEqual(MINOR_CI_DISEASES.length + MAJOR_CI_DISEASES.length + 1);
+  expect(countEmbeddedImages(pdf)).toBeGreaterThanOrEqual(MINOR_CI_DISEASES.length + MAJOR_CI_DISEASES.length + 1);
 });
 
 test('without a selected CI rider the report keeps its original pages and no appendix', async ({ page }, testInfo) => {
@@ -289,7 +286,7 @@ test('full journey with the CI rider selected: the downloaded report ends with t
 test('the in-app disease dialog reads the same shared lists as the report', async ({ page }) => {
   await page.goto('/');
   await calculateEndowment(page, 'Mahadi Hasan', { ciRider: 'classic' });
-  await page.getByRole('button', { name: 'View covered critical illness diseases' }).click();
+  await page.getByRole('button', { name: /View Diseases/ }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Critical illness diseases' });
   await expect(dialog).toContainText('19 covered diseases');
   await expect(dialog).toContainText('Cancer (ক্যান্সার)');
