@@ -20,6 +20,18 @@ jobs:
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Publish e2e failure details as a PR comment
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "### Playwright failure context"
+            echo '```md'
+            find test-results -name 'error-context.md' -exec sh -c 'echo "--- $1"; head -c 6000 "$1"' _ {} \; | head -c 24000
+            echo '```'
+          } > /tmp/e2e-failures.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file /tmp/e2e-failures.md
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

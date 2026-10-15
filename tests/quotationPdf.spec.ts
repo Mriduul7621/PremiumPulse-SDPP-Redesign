@@ -117,7 +117,7 @@ test('combination quotation: both policies keep their pages and the appendix app
   expect(appendix).toContain('Critical Illness Classic');
   expect(appendix).not.toContain('POLICY');
   expect(pages.slice(0, -1).join(' ')).toContain('POLICY 2 OF 2');
-  expect(pages.filter(text => text.includes('Critical Illness Classic'))).toHaveLength(1);
+  expect(pages.filter(text => text.includes('Covered diseases (19)'))).toHaveLength(1);
 });
 
 for (const scenario of ['elite', 'prime', 'signature', 'long', 'combo', 'single', 'child', 'staged']) {
