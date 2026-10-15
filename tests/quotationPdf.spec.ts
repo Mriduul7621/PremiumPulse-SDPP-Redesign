@@ -4,7 +4,9 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { CLASSIC_CI_DISEASES, MAJOR_CI_DISEASES, MINOR_CI_DISEASES } from '../src/data/ciDiseases';
 
 async function inspectPdf(bytes: Uint8Array) {
-  const document = await getDocument({ data: bytes, useSystemFonts: true }).promise;
+  // pdf.js takes ownership of (detaches) the buffer it is given, so inspect a copy
+  // and let callers keep using their bytes afterwards.
+  const document = await getDocument({ data: new Uint8Array(bytes), useSystemFonts: true }).promise;
   const pages: string[] = [];
   for (let number = 1; number <= document.numPages; number++) {
     const page = await document.getPage(number);
@@ -28,11 +30,7 @@ async function inspectPdf(bytes: Uint8Array) {
 }
 
 async function quotationBytes(page: Page, scenario: string) {
-  const renderer = '/src/lib/quotationPdf.ts', fixtures = '/tests/fixtures.ts';
-  // Generate inside the page, keep the bytes there, and copy them out in small
-  // chunks: a single huge evaluate result can be lost when the dev server
-  // reloads the page while the first modules are still being optimized.
-  const generate = () => page.evaluate(async ([renderer, fixtures, scenario]) => {
+  return page.evaluate(async ([renderer, fixtures, scenario]) => {
     const { createQuotationPdf } = await import(renderer);
     const { quotationFixture, comboFixture } = await import(fixtures);
     const options = scenario === 'combo-classic' ? comboFixture() : quotationFixture('endowment');
@@ -40,24 +38,8 @@ async function quotationBytes(page: Page, scenario: string) {
     if (scenario === 'ci-standard') options.input.hasCIStandard = true;
     if (scenario === 'ci-low-sum') { options.input.hasCIClassic = true; options.input.sumAssured = 150000; }
     const pdf = await createQuotationPdf(options, new Date('2026-10-15T16:00:00Z'));
-    const bytes = new Uint8Array(pdf.output('arraybuffer'));
-    (window as unknown as { __quotationBytes?: Uint8Array }).__quotationBytes = bytes;
-    return bytes.length;
-  }, [renderer, fixtures, scenario] as const);
-  let length = await generate().catch(() => 0);
-  if (typeof length !== 'number' || length === 0) {
-    await page.waitForLoadState('load');
-    length = await generate();
-  }
-  if (typeof length !== 'number' || length === 0) throw new Error(`The quotation renderer returned no payload for ${scenario} (got ${String(length)}).`);
-  const bytes: number[] = [];
-  for (let offset = 0; offset < length; offset += 65536) {
-    const chunk = await page.evaluate(([start, end]) =>
-      Array.from((window as unknown as { __quotationBytes: Uint8Array }).__quotationBytes.subarray(start, end)), [offset, Math.min(offset + 65536, length)]);
-    bytes.push(...chunk);
-  }
-  await page.evaluate(() => { delete (window as unknown as { __quotationBytes?: Uint8Array }).__quotationBytes; });
-  return bytes;
+    return Array.from(new Uint8Array(pdf.output('arraybuffer')));
+  }, ['/src/lib/quotationPdf.ts', '/tests/fixtures.ts', scenario] as const);
 }
 
 test('CI Classic: the report ends with one appendix page listing only its 19 diseases', async ({ page }, testInfo) => {
