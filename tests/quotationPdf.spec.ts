@@ -28,8 +28,11 @@ async function inspectPdf(bytes: Uint8Array) {
 }
 
 async function quotationBytes(page: Page, scenario: string) {
-  const generate = () => page.evaluate(async scenario => {
-    const renderer = '/src/lib/quotationPdf.ts', fixtures = '/tests/fixtures.ts';
+  const renderer = '/src/lib/quotationPdf.ts', fixtures = '/tests/fixtures.ts';
+  // Generate inside the page, keep the bytes there, and copy them out in small
+  // chunks: a single huge evaluate result can be lost when the dev server
+  // reloads the page while the first modules are still being optimized.
+  const generate = () => page.evaluate(async ([renderer, fixtures, scenario]) => {
     const { createQuotationPdf } = await import(renderer);
     const { quotationFixture, comboFixture } = await import(fixtures);
     const options = scenario === 'combo-classic' ? comboFixture() : quotationFixture('endowment');
@@ -37,18 +40,23 @@ async function quotationBytes(page: Page, scenario: string) {
     if (scenario === 'ci-standard') options.input.hasCIStandard = true;
     if (scenario === 'ci-low-sum') { options.input.hasCIClassic = true; options.input.sumAssured = 150000; }
     const pdf = await createQuotationPdf(options, new Date('2026-10-15T16:00:00Z'));
-    return Array.from(new Uint8Array(pdf.output('arraybuffer')));
-  }, scenario);
-  // The first import of the renderer can race Vite's dependency-optimization page
-  // reload and resolve with an empty payload; warm the module graph, then retry once.
-  const renderer = '/src/lib/quotationPdf.ts';
-  await page.evaluate(module => import(module).then(() => true), renderer).catch(() => false);
-  let bytes = await generate();
-  if (!bytes || bytes.length === 0) {
+    const bytes = new Uint8Array(pdf.output('arraybuffer'));
+    (window as unknown as { __quotationBytes?: Uint8Array }).__quotationBytes = bytes;
+    return bytes.length;
+  }, [renderer, fixtures, scenario] as const);
+  let length = await generate().catch(() => 0);
+  if (typeof length !== 'number' || length === 0) {
     await page.waitForLoadState('load');
-    bytes = await generate();
+    length = await generate();
   }
-  if (!bytes || bytes.length === 0) throw new Error(`The quotation renderer returned no payload for ${scenario}.`);
+  if (typeof length !== 'number' || length === 0) throw new Error(`The quotation renderer returned no payload for ${scenario} (got ${String(length)}).`);
+  const bytes: number[] = [];
+  for (let offset = 0; offset < length; offset += 65536) {
+    const chunk = await page.evaluate(([start, end]) =>
+      Array.from((window as unknown as { __quotationBytes: Uint8Array }).__quotationBytes.subarray(start, end)), [offset, Math.min(offset + 65536, length)]);
+    bytes.push(...chunk);
+  }
+  await page.evaluate(() => { delete (window as unknown as { __quotationBytes?: Uint8Array }).__quotationBytes; });
   return bytes;
 }
 
