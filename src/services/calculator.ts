@@ -16,6 +16,7 @@ import { ETI_RATES } from '../data/eti_rates';
 import { S4PP_ANNUAL_RATES, S4PP_CSV, S4PP_ETI_RATES } from '../data/s4pp_rates';
 import { S3PP_ANNUAL_RATES, S3PP_CSV, S3PP_ETI_RATES } from '../data/s3pp_rates';
 
+import { ciCoverageAmount, isCiRiderEligible } from '../data/ciDiseases';
 import { getCIRate } from '../lib/rateLookup';
 
 const ACCIDENTAL_RATE = 5.57; // per 1000
@@ -252,8 +253,9 @@ export function calculatePremiums(input: CalculationInput): (CalculationResult |
     }
     
     // CI Eligibility - Coverage is 50% of Sum Assured, max 30 Lakh (3,000,000)
-    const isCIEligible = sumAssured >= 200000;
-    const ciCoverage = Math.min(sumAssured * 0.5, 3000000);
+    // Shared rider rules live in data/ciDiseases so pricing, the app and the report agree.
+    const isCIEligible = isCiRiderEligible(sumAssured);
+    const ciCoverage = ciCoverageAmount(sumAssured);
     if (hasCIClassic && isCIEligible) {
       ciClassicYearly = (getCIRate(age, term, gender, 'Classic') * ciCoverage) / 1000;
     }

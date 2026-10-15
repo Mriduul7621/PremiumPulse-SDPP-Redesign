@@ -1,5 +1,10 @@
 import type { CalculationInput, CalculationResult, PlanFrequency, ProjectionRow, SDPPResult } from '../data/types';
 import { SDPP_ILLUSTRATION_RATES } from '../services/sdpCalculator';
+import {
+  CI_MAJOR_BENEFIT_SHARE_AFTER_MINOR, CI_MAJOR_BENEFIT_SHARE_WITHOUT_MINOR, CI_MINOR_BENEFIT_SHARE,
+  CI_MINIMUM_SUM_ASSURED, CLASSIC_CI_DISEASES, MAJOR_CI_DISEASES, MINOR_CI_DISEASES,
+  ciCoverageAmount, isCiRiderEligible, type CiDisease, type CiRiderType,
+} from '../data/ciDiseases';
 
 export interface QuotationOptions {
   input: CalculationInput;
@@ -27,10 +32,34 @@ export interface QuotePolicy {
   summary: QuoteTable[];
   schedules: QuoteTable[];
 }
+export interface CiConditionEntry {
+  index: number;
+  /** Selectable Latin-script condition name. */
+  english: string;
+  /** Bengali condition name; rasterized with browser shaping in the report. */
+  bengali: string;
+}
+export interface CiConditionGroup {
+  heading: string;
+  benefit: string;
+  entries: CiConditionEntry[];
+}
+export interface CiRiderSchedule {
+  rider: CiRiderType;
+  riderName: string;
+  intro: string;
+  /** Rider coverage shown beside the disease list; undefined when the cover does not apply. */
+  coverage?: number;
+  coverageNote?: string;
+  groups: CiConditionGroup[];
+  note: string;
+}
 export interface QuotationModel {
   input: CalculationInput;
   policies: QuotePolicy[];
   notes: string[];
+  /** Present only when a Critical Illness rider is selected for the quoted policy. */
+  ciSchedule?: CiRiderSchedule;
 }
 
 export const paymentsPerYear = (mode: PlanFrequency): number => ({ Monthly: 12, Quarterly: 4, 'Half-yearly': 2, Yearly: 1, Single: 1 })[mode];
@@ -83,6 +112,52 @@ function sdppPolicy(input: CalculationInput, data: SDPPResult, plan: string, mod
       pairTable('Protection at a glance', benefits, 'The accidental benefit is additional to the applicable death benefit. Benefits are subject to policy definitions, limits and exclusions.'),
       pairTable('Illustrated maturity | not guaranteed', maturityRows, 'These scenarios are not promised returns. Actual credited rates and maturity proceeds may be higher or lower.'),
     ], schedules,
+  };
+}
+
+const conditionEntries = (list: CiDisease[]): CiConditionEntry[] =>
+  list.map((disease, index) => ({ index: index + 1, english: disease.english, bengali: disease.bengali }));
+const percent = (share: number): string => `${Math.round(share * 100)}%`;
+const NO_COVERAGE = 'No coverage amount applies at the selected sum assured.';
+const CI_LIST_NOTE = 'Condition names follow the rider wording used in the PremiumPulse app; they are not policy definitions. Any claim depends on the issued rider definitions, severity, waiting and survival periods, limits and exclusions, and on Shanta Life claim approval.';
+
+/** Appendix data for the selected Critical Illness rider: the same shared lists the app dialog shows. */
+function ciRiderSchedule(input: CalculationInput, rider: CiRiderType): CiRiderSchedule {
+  const eligible = isCiRiderEligible(input.sumAssured);
+  const coverage = eligible ? (input.ciCoverage || ciCoverageAmount(input.sumAssured)) : undefined;
+  const coverageNote = eligible ? undefined
+    : `The selected sum assured of ${quoteMoney(input.sumAssured)} is below the ${quoteMoney(CI_MINIMUM_SUM_ASSURED)} minimum for critical illness cover, so this quotation carries no rider coverage amount.`;
+  if (rider === 'classic') {
+    return {
+      rider, riderName: 'Critical Illness Classic',
+      intro: `Rider selected in this quotation: ${CLASSIC_CI_DISEASES.length} covered diseases.`,
+      coverage, coverageNote,
+      groups: [{
+        heading: `Covered diseases (${CLASSIC_CI_DISEASES.length})`,
+        benefit: coverage === undefined ? NO_COVERAGE : `CI coverage: ${quoteMoney(coverage)}`,
+        entries: conditionEntries(CLASSIC_CI_DISEASES),
+      }],
+      note: CI_LIST_NOTE,
+    };
+  }
+  return {
+    rider, riderName: 'Critical Illness Standard',
+    intro: `Rider selected in this quotation: ${MINOR_CI_DISEASES.length} minor and ${MAJOR_CI_DISEASES.length} major diseases.`,
+    coverage, coverageNote,
+    groups: [
+      {
+        heading: `Minor critical illness (${MINOR_CI_DISEASES.length})`,
+        benefit: coverage === undefined ? NO_COVERAGE : `${percent(CI_MINOR_BENEFIT_SHARE)} of CI coverage: ${quoteMoney(coverage * CI_MINOR_BENEFIT_SHARE)}`,
+        entries: conditionEntries(MINOR_CI_DISEASES),
+      },
+      {
+        heading: `Major critical illness (${MAJOR_CI_DISEASES.length})`,
+        benefit: coverage === undefined ? NO_COVERAGE
+          : `If minor claimed: ${percent(CI_MAJOR_BENEFIT_SHARE_AFTER_MINOR)} - ${quoteMoney(coverage * CI_MAJOR_BENEFIT_SHARE_AFTER_MINOR)}. If minor not claimed: ${percent(CI_MAJOR_BENEFIT_SHARE_WITHOUT_MINOR)} - ${quoteMoney(coverage * CI_MAJOR_BENEFIT_SHARE_WITHOUT_MINOR)}.`,
+        entries: conditionEntries(MAJOR_CI_DISEASES),
+      },
+    ],
+    note: CI_LIST_NOTE,
   };
 }
 
@@ -142,7 +217,7 @@ export function buildQuotationModel(options: QuotationOptions): QuotationModel {
     // Use the already-calculated combination result, including rider costs and rider expiry.
     policies.push(sdppPolicy({ ...input, customInterestRate: options.comboSdppCustomRate }, options.sdppComboData, options.comboSdppPlan || 'Elite', mode));
   }
-  return { input, policies, notes: [
+  const model: QuotationModel = { input, policies, notes: [
     'Unofficial sample illustration - not a contract, policy document or offer of insurance. Prepared by PremiumPulse for explanation and discussion only.',
     'Premiums and benefits are indicative calculations. Final premiums, eligibility, coverage, exclusions, waiting periods and rider expiry are determined by Shanta Life underwriting and the issued policy. Verify all figures with the insurer before purchase.',
     'Investment-based projections are non-guaranteed. Actual credited rates, charges and proceeds may differ. Early surrender or stopping premiums may reduce benefits and return less than premiums paid.',
@@ -150,4 +225,12 @@ export function buildQuotationModel(options: QuotationOptions): QuotationModel {
     ...(policies.length > 1 ? ['This illustration contains two separate policies. Payment modes and rider durations may differ. The amounts shown for each policy are separate obligations; benefits are subject to each policy independently.'] : []),
     'Next step: review the benefits and exclusions with an authorized adviser and request an official insurer quotation before making a decision.',
   ] };
+  // The appendix lists only the rider the customer actually selected, on its own final page.
+  const ciRider: CiRiderType | undefined = !isSDPP && (input.hasCIClassic || input.hasCIStandard)
+    ? (input.hasCIClassic ? 'classic' : 'standard') : undefined;
+  if (ciRider) {
+    model.ciSchedule = ciRiderSchedule(input, ciRider);
+    model.notes.splice(model.notes.length - 1, 0, `The conditions covered by your selected ${model.ciSchedule.riderName} rider are listed in the appendix at the end of this report.`);
+  }
+  return model;
 }

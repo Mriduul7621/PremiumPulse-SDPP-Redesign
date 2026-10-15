@@ -37,6 +37,39 @@ marketing cover or a screenshot of the calculator.
 - Lockfile repaired for reproducible `npm ci`; dependencies patched and a `qs`
   security override applied. Existing Capacitor / Vite type-check errors fixed.
 
+### Critical illness rider condition appendix (October 2026)
+
+Selecting a Critical Illness rider now appends the rider's own condition list to
+the downloaded quotation as a final, standalone A4 page.
+
+- `src/data/ciDiseases.ts` is the single shared source: the 19 CI Classic
+  conditions, the 10 CI Standard minor and 15 major conditions (Latin plus
+  Bengali names), the 50%-of-sum-assured / 30 Lakh coverage rule, the 30% / 70% /
+  100% benefit split and the 2 Lakh minimum sum assured used by the pricing
+  engine. The on-screen dialog, the calculator pricing and the report all read
+  it, so no condition name or coverage figure exists twice.
+- `src/lib/quotationModel.ts` maps the selected rider into a typed
+  `ciSchedule` appendix: coverage amount, condition groups and benefits. Without
+  a selected rider - or on SDPP plans, whose built-in CI cover is separate - the
+  model carries no appendix and the report is byte-identical to before.
+- `src/lib/quotationPdf.ts` renders the appendix after the notes, on its own
+  page: repeated header and footer, page numbering, coverage band, one section
+  per condition group, zebra rows with a selectable Latin name plus the shaped
+  Bengali name rasterized through the same bundled Noto Sans Bengali path as
+  customer details. Column widths are measured against the longest existing
+  condition name so every rider's complete list stays on one page; row heights
+  are still computed per row, so a wrapped name paginates safely instead of
+  clipping.
+- The preview, print, comparison, calculator formulas and Android save/share
+  flows are untouched; the preview's "View Diseases" dialog now renders from the
+  shared module as well.
+
+Verification adds unit tests for the shared wording / coverage rules
+(`tests/ciDiseases.test.ts`, `tests/quotationCi.test.ts`) and browser tests that
+the classic and standard lists each land on exactly one final page, that the
+unselected rider's conditions never appear, and that rider-less reports keep
+their original page count (`tests/quotationPdf.spec.ts`).
+
 ### Verification
 
 ```sh
