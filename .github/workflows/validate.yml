@@ -22,6 +22,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: |
           set -o pipefail
+          rm -rf test-results
           npm run test:e2e 2>&1 | tee /tmp/e2e-console.log
       - name: Publish e2e failure details as a PR comment
         if: failure()
