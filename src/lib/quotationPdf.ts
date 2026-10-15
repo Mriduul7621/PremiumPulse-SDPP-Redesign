@@ -78,7 +78,11 @@ export async function createQuotationPdf(options: QuotationOptions, generatedAt 
   // use browser shaping with a bundled OFL font (no remote font service required).
   const personalDetails = [model.input.name || 'Valued customer', model.input.phone, model.input.email].filter(Boolean) as string[];
   if (personalDetails.some(value => /[^\x20-\x7e]/.test(value))) {
-    const font = new FontFace('QuotationBengali', 'url(/fonts/NotoSansBengali.ttf)');
+    // Fetch bytes through the same-origin app cache. Font URL requests can carry
+    // different Origin/Vary headers and miss a precached response when offline.
+    const fontResponse = await fetch('/fonts/NotoSansBengali.ttf');
+    if (!fontResponse.ok) throw new Error('The customer-name font could not be loaded. Please retry.');
+    const font = new FontFace('QuotationBengali', await fontResponse.arrayBuffer());
     await font.load();
     document.fonts.add(font);
   }

@@ -31,7 +31,9 @@ marketing cover or a screenshot of the calculator.
   remain available. PDF schedules are included even where the embedded preview
   omits them. Native Android still uses the existing filesystem / share workflow.
 - Offline cache revision is bumped and the local Bengali font is precached.
-  Production builds continue to use hashed JS/CSS assets.
+  Production builds continue to use hashed JS/CSS assets. Same-origin static
+  asset cache lookups tolerate Origin/Vary differences so offline module and
+  font requests work after precaching.
 - Lockfile repaired for reproducible `npm ci`; dependencies patched and a `qs`
   security override applied. Existing Capacitor / Vite type-check errors fixed.
 
@@ -50,7 +52,8 @@ npm audit
 Browser regression tests cover generated text, financial figures, media-box
 bounds, page numbering, long schedules, Bengali names, desktop / mobile download
 buttons, zoom independence, failure / retry and the complete calculation journey.
-Test-only HTML entries are not referenced by the production build. Generated
+A production-build regression also verifies Bengali-name exports and app reloads
+with the browser offline. Test-only HTML entries are not referenced by the production build. Generated
 reports and screenshots stay in ignored `test-results/`, not source control.
 
 These checks do not constitute actuarial certification. Confirm financial rules

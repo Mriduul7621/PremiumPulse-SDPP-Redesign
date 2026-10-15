@@ -51,7 +51,10 @@ self.addEventListener('fetch', event => {
     return;
   }
   event.respondWith((async () => {
-    const cached = await caches.match(request);
+    // Same-origin bundled assets are not personalized. Ignore development/static
+    // server Vary: Origin differences between precache and module/font requests.
+    const staticAsset = sameOrigin && (url.pathname.startsWith('/assets/') || APP_SHELL.includes(url.pathname));
+    const cached = await caches.match(request, { ignoreVary: staticAsset });
     if (cached) return cached;
     try {
       const response = await fetch(request);

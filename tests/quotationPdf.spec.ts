@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 
@@ -121,9 +121,24 @@ test('failed asset load shows an accessible retryable error, then recovers', asy
 
 test('full customer journey: calculate an endowment plan, download the report and retain editable inputs', async ({ page }) => {
   await page.goto('/');
+  await calculateEndowment(page, 'Mahadi Hasan');
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download PDF', exact: true }).click();
+  const download = await downloadPromise;
+  const content = (await inspectPdf(new Uint8Array(await readFile((await download.path())!)))).join(' ');
+  expect(content).toContain('Shanta Endowment Plan');
+  expect(content).toContain('Mahadi Hasan');
+  expect(content).toContain('BDT 10,217');
+  expect(content).toContain('BDT 1,471,248');
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await page.getByRole('button', { name: '1. Personal', exact: true }).click();
+  await expect(page.getByPlaceholder('Enter customer name')).toHaveValue('Mahadi Hasan');
+});
+
+async function calculateEndowment(page: Page, name: string) {
   await page.getByRole('button', { name: 'Start Valuation' }).click();
   await expect(page.getByRole('navigation', { name: 'Configuration steps' })).toBeVisible();
-  await page.getByPlaceholder('Enter customer name').fill('Mahadi Hasan');
+  await page.getByPlaceholder('Enter customer name').fill(name);
   await page.getByRole('button', { name: '♀ Female' }).click();
   await page.locator('input[type=date]').nth(0).fill('2026-10-15');
   await page.locator('input[type=date]').nth(1).fill('1979-12-24');
@@ -136,15 +151,24 @@ test('full customer journey: calculate an endowment plan, download the report an
   await page.getByPlaceholder('Enter amount (BDT)').fill('1440000');
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.getByRole('button', { name: 'View Calculation Result' }).click();
+  await expect(page.getByRole('button', { name: 'Download PDF', exact: true })).toBeVisible();
+}
+
+test('production app exports Bengali customer details offline and reloads from the updated app cache', async ({ page, context }) => {
+  await page.route('https://**/*', route => route.abort());
+  await page.goto('http://localhost:3001');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+  expect(await page.evaluate(() => caches.keys())).toContain('premium-pulse-offline-v3');
+  await calculateEndowment(page, 'মাহাদী হাসান');
+  await context.setOffline(true);
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download PDF', exact: true }).click();
   const download = await downloadPromise;
   const content = (await inspectPdf(new Uint8Array(await readFile((await download.path())!)))).join(' ');
   expect(content).toContain('Shanta Endowment Plan');
-  expect(content).toContain('Mahadi Hasan');
   expect(content).toContain('BDT 10,217');
-  expect(content).toContain('BDT 1,471,248');
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
-  await page.getByRole('button', { name: '1. Personal', exact: true }).click();
-  await expect(page.getByPlaceholder('Enter customer name')).toHaveValue('Mahadi Hasan');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Start Valuation' })).toBeVisible();
 });
